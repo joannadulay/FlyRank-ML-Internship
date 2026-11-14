@@ -247,7 +247,7 @@ def baseline_mean_reversion(thr=CFG["change_thr"]):
 def baseline_recent_slope(train):
     """Strongest simple rule: a depth-3 tree using ONLY r7 (last-7-day level vs the 28-day average). Fit on training data."""
     from sklearn.tree import DecisionTreeClassifier
-    tree = DecisionTreeClassifier(max_depth=3, class_weight="balanced", random_state=CFG["seed"])
+    tree = DecisionTreeClassifier(max_depth=3, random_state=CFG["seed"])
     tree.fit(train[["r7"]].fillna(-1e9), train["y"])
     return lambda df: tree.predict(df[["r7"]].fillna(-1e9)).astype(object)
 
