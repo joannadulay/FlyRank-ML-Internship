@@ -1,0 +1,35 @@
+[
+ {
+  "test_month":"2026-03-08",
+  "n":60233,
+  "model":0.4485,
+  "persistence":0.2534,
+  "recent_slope":0.2972,
+  "momentum_tree":0.4455,
+  "majority":0.1022,
+  "best_baseline":0.4455,
+  "gain_vs_best_baseline":0.003
+ },
+ {
+  "test_month":"2026-04-05",
+  "n":77105,
+  "model":0.4456,
+  "persistence":0.2609,
+  "recent_slope":0.3476,
+  "momentum_tree":0.4061,
+  "majority":0.1294,
+  "best_baseline":0.4061,
+  "gain_vs_best_baseline":0.0395
+ },
+ {
+  "test_month":"2026-05-03",
+  "n":85997,
+  "model":0.437,
+  "persistence":0.3003,
+  "recent_slope":0.3991,
+  "momentum_tree":0.4499,
+  "majority":0.1337,
+  "best_baseline":0.4499,
+  "gain_vs_best_baseline":-0.0129
+ }
+]
