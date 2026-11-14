@@ -14,6 +14,9 @@ th,td{border-bottom:1px solid var(--line);padding:.4em .6em;text-align:right}th:
 .abs{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:1em 1.2em}a{color:var(--acc)}code{font-size:.88em}
 """
 
+def nice(name):
+    return {"hist_gradient_boosting": "histogram gradient boosting", "logistic_regression": "logistic regression"}.get(name, name.replace("_", " "))
+
 def pct(x): return f"{100*x:.1f}%"
 def f3(x): return f"{x:.3f}"
 
@@ -37,12 +40,12 @@ def build(out_path, final, dev, audit, queue, figs, funnel, plan, cfg, repo_url,
     abstract = (
         f"Content teams cannot review every page, so which pages deserve attention first? "
         f"We observe daily search-impression data for pages across many sites (FlyRank ML Internship dataset) and label each page-window as Growth, Recovery, Stable or Decline from the change in impressions per available day over the next {w} days (threshold {thr}%). "
-        f"A {final['model'].replace('_',' ')} classifier uses only the preceding {2*w} days of search and engagement signals, and is trained on earlier cutoffs and tested on a later, sealed month. "
+        f"A {nice(final['model'])} classifier uses only the preceding {2*w} days of search and engagement signals, and is trained on earlier cutoffs and tested on a later, sealed month. "
         f"On {final['n_test']:,} held-out pages the model's macro F1 is {f3(m['macro_f1'])}, {verdict}. "
         f"The ranked list is decision-support only: it is directional, not causal, and says nothing about how Google ranks pages.")
     ev_rows = [[r["name"], f"{r['n']:,}", pct(r["share_declined"]), f"{r['lift']:.2f}x"] for r in q["precision_at_k"]]
     cm = table(["Method", "Macro F1", "Accuracy"], [
-        ["Model (" + final["model"].replace("_", " ") + ")", f3(m["macro_f1"]), f3(m["accuracy"])]] +
+        ["Model (" + nice(final["model"]) + ")", f3(m["macro_f1"]), f3(m["accuracy"])]] +
         [[k.replace("_", " ") + " rule", f3(v["macro_f1"]), f3(v["accuracy"])] for k, v in final["baselines"].items()])
     pc = table(["Class", "Share of test pages", "Model F1", "Best-baseline F1"], [
         [c, pct(final["class_share_test"].get(c, 0)), f3(m["per_class_f1"][c]), f3(b["per_class_f1"][c])] for c in m["per_class_f1"]])
@@ -89,7 +92,7 @@ def build(out_path, final, dev, audit, queue, figs, funnel, plan, cfg, repo_url,
 {regime_html}
 <p class="small">No client names, domains, URLs, queries, credentials or raw exports are published.</p>
 <h2>3. Methodology</h2>
-<p><b>Windows.</b> For each cutoff date T: window A = days T−{2*w-1} to T−{w}, window B = T−{w-1} to T (history, used for features), window C = T+1 to T+{w} (outcome, used only for the label). <b>Label.</b> Using impressions per GSC-available day: Growth if C is at least {thr}% above B; Decline if at least {thr}% below; Recovery is Growth where B was itself at least {thr}% below A; otherwise Stable. <b>Features</b> ({len(dev['features'])}): impression level and change, last-7-day slope, CTR and its change, average position and change, volatility, share of active days, data availability, and GA4 coverage/engagement (left missing, not zero-filled, when GA4 was not reporting). <b>Baselines:</b> always-the-majority-class, “last window’s direction continues”, “last window’s move reverses”, and a one-feature “recent slope” rule (a small decision tree using only the last-7-day trend). plus a two-feature “momentum tree” (last-7-day trend and change versus the previous window). The last two are the demanding ones: they show how much of the model’s signal is simply recent momentum. The tree’s depth and class weighting were fixed on validation data only. <b>Validation:</b> time-aware. Training cutoffs are spaced {w} days apart, so no training label window overlaps the next split; the test cutoff comes from the sealed final month. Primary metric: macro F1 (every class counts equally); accuracy is secondary. Uncertainty comes from resampling whole clients.</p>
+<p><b>Windows.</b> For each cutoff date T: window A = days T−{2*w-1} to T−{w}, window B = T−{w-1} to T (history, used for features), window C = T+1 to T+{w} (outcome, used only for the label). <b>Label.</b> Using impressions per GSC-available day: Growth if C is at least {thr}% above B; Decline if at least {thr}% below; Recovery is Growth where B was itself at least {thr}% below A; otherwise Stable. <b>Features</b> ({len(dev['features'])}): impression level and change, last-7-day slope, CTR and its change, average position and change, volatility, share of active days, data availability, and GA4 coverage/engagement (left missing, not zero-filled, when GA4 was not reporting). <b>Baselines:</b> always-the-majority-class, “last window’s direction continues”, “last window’s move reverses”, and a one-feature “recent slope” rule (a small decision tree using only the last-7-day trend), plus a two-feature “momentum tree” (last-7-day trend and change versus the previous window). The last two are the demanding ones: they show how much of the model’s signal is simply recent momentum. The tree’s depth and class weighting were fixed on validation data only. <b>Validation:</b> time-aware. Training cutoffs are spaced {w} days apart, so no training label window overlaps the next split; the test cutoff comes from the sealed final month. Primary metric: macro F1 (every class counts equally); accuracy is secondary. Uncertainty comes from resampling whole clients.</p>
 <p><b>Leakage checks.</b> (1) Features recomputed after physically deleting all rows after the cutoff were identical (max absolute difference {aud['leakage']['max_abs_diff']:.2g}). (2) No single feature alone reached macro F1 above {aud['leakage']['single_feature_max']:.3f}. (3) Client and page identifiers are never model inputs.</p>
 <h2>4. Results</h2>
 {cm}{pc}
@@ -114,7 +117,7 @@ def build(out_path, final, dev, audit, queue, figs, funnel, plan, cfg, repo_url,
 {fig(figs,'lift','Share of flagged pages that actually declined in the next 28 days vs the base rate')}
 <p><b>Human review before acting:</b> check for a known cause (seasonality, migration, tracking change); never auto-rewrite, merge or delete a page from this list. <b>Stale triggers:</b> re-evaluate when macro F1 on the newest labelled cutoff drops below the best baseline, or any key feature’s population stability index exceeds 0.25 (current largest: {e(queue['drift_top_feature'])} at {queue['drift_top_psi']:.2f}).</p>
 <h2>7. Reproducibility</h2>
-<p>All code is in <a href="{e(repo_url)}" target="_blank" rel="noopener">the project repository</a>: notebooks <code>w04_signal_audit</code>, <code>w05_model</code>, <code>w06_validation_audit</code>, <code>w07_action_playbook</code> and <code>capstone</code> under <code>work/notebooks/</code>, shared code in <code>work/src/</code>. Fixed seed {cfg['seed']}.</p>
+<p>All code is in <a href="{e(repo_url)}" target="_blank" rel="noopener">the project repository</a>: notebooks <code>w04_signal_audit</code>, <code>w05_model</code>, <code>w06_validation_audit</code>, <code>w07_action_playbook</code> and <code>capstone</code> under <code>work/notebooks/</code>, shared code in <code>work/src/</code>. Fixed seed {cfg['seed']}. Rebuilding the page-level tables can reorder rows, so a re-run may differ from the reported scores in the third decimal place.</p>
 <h2>8. Acknowledgments and data credit</h2>
 <p>Built on the FlyRank ML Internship dataset — <a href="https://flyrank.ai" target="_blank" rel="noopener">flyrank.ai</a>.</p>
 </main></body></html>"""
