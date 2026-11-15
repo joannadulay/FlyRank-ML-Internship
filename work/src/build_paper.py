@@ -3,15 +3,62 @@ import html, json, os
 e = html.escape
 
 CSS = """
-:root{--bg:#fbfaf7;--fg:#1d1d1b;--mut:#6b6a64;--line:#e2e0d8;--acc:#1f5f8b;--card:#fff}
-@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#16171a;--fg:#ecebe6;--mut:#a3a29b;--line:#2d2f34;--acc:#7fb6dd;--card:#1e2024}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:17px/1.65 Georgia,'Times New Roman',serif}
-main{max-width:760px;margin:0 auto;padding:48px 20px 80px}h1{font-size:2rem;line-height:1.25;margin:.2em 0}
-h2{font-size:1.35rem;margin:2.2em 0 .4em;border-bottom:1px solid var(--line);padding-bottom:.2em}
-.meta,figcaption,.small{color:var(--mut);font-size:.9rem}table{border-collapse:collapse;width:100%;font:.9rem system-ui,sans-serif;margin:1em 0}
-th,td{border-bottom:1px solid var(--line);padding:.4em .6em;text-align:right}th:first-child,td:first-child{text-align:left}
-.wrap{overflow-x:auto}figure{margin:1.5em 0}img{max-width:100%;height:auto;background:#fff;border-radius:6px}
-.abs{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:1em 1.2em}a{color:var(--acc)}code{font-size:.88em}
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,400;125,600;125,800&display=swap');
+@font-face{font-family:"Helios Extended";font-display:swap;
+  src:local("Helios Extended"),local("HeliosExtended"),local("Helios-Extended"),
+      url("fonts/HeliosExtended.woff2") format("woff2"),url("fonts/HeliosExtended.woff") format("woff");}
+:root{--bg:#f4f3ef;--ink:#111;--mut:#6f6e68;--line:#111;--hair:#cfcdc4;--acc:#ff4f00;
+  --f:"Helios Extended","Archivo","Helvetica Neue",Arial,sans-serif}
+*{box-sizing:border-box}html{scroll-behavior:auto}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.65 var(--f);font-stretch:125%;-webkit-font-smoothing:antialiased}
+a{color:var(--ink);text-decoration-thickness:1px;text-underline-offset:3px}a:hover{color:var(--acc)}
+.shell{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh}
+aside{position:sticky;top:0;height:100vh;padding:28px 24px;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between}
+.brand{font-weight:800;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;line-height:1.4}
+nav{margin-top:36px;display:flex;flex-direction:column}
+nav a{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);text-decoration:none;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
+nav a b{font-weight:600;min-width:1.6em}nav a:last-child{border-bottom:1px solid var(--hair)}
+nav a:hover{color:var(--ink)}nav a.on{color:var(--ink);font-weight:800}nav a.on b{color:var(--acc)}
+.credit{font-size:.66rem;line-height:1.5;color:var(--mut);letter-spacing:.03em}
+main{padding:56px 64px 120px 56px}
+.panel{max-width:920px}
+h1{font-weight:800;font-size:clamp(1.9rem,4vw,3.4rem);line-height:1.04;letter-spacing:-.015em;text-transform:uppercase;margin:.15em 0 .5em}
+h2{font-weight:800;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;border-top:2px solid var(--line);padding-top:10px;margin:2.6em 0 .9em}
+h2:first-of-type{margin-top:0}
+p{margin:0 0 1em;max-width:68ch}ul{padding-left:1.1em;max-width:68ch}li{margin-bottom:.5em}
+.meta,figcaption,.small{color:var(--mut);font-size:.74rem;letter-spacing:.02em}
+.lead{font-size:1.05rem;line-height:1.55;max-width:60ch;border-left:4px solid var(--acc);padding-left:18px;margin:1.4em 0 2em}
+.kf{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:2px solid var(--line);border-bottom:1px solid var(--line);margin:2em 0}
+.kf div{padding:16px 16px 16px 0}.kf div+div{padding-left:16px;border-left:1px solid var(--hair)}
+.kf strong{display:block;font-weight:800;font-size:clamp(1.4rem,2.6vw,2.2rem);letter-spacing:-.02em;line-height:1.1}
+.kf span{font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);display:block;margin-top:6px}
+table{border-collapse:collapse;width:100%;font-size:.78rem;margin:1.2em 0;font-variant-numeric:tabular-nums}
+th{font-size:.64rem;letter-spacing:.07em;text-transform:uppercase;font-weight:600;color:var(--mut);text-align:right;padding:6px 10px;border-bottom:1px solid var(--line)}
+td{padding:7px 10px;border-bottom:1px solid var(--hair);text-align:right}th:first-child,td:first-child{text-align:left;padding-left:0}
+.wrap{overflow-x:auto}figure{margin:1.8em 0;max-width:760px}img{max-width:100%;height:auto;display:block}
+figcaption{margin-top:8px}code{font-size:.9em;background:#e9e7df;padding:1px 5px}
+.tag{display:inline-block;background:var(--ink);color:var(--bg);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;margin-right:8px}
+.panel[hidden]{display:none}
+@media (max-width:900px){
+ .shell{grid-template-columns:1fr}
+ aside{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:16px 18px}
+ nav{flex-direction:row;overflow-x:auto;margin-top:12px;gap:18px}
+ nav a{border:0!important;white-space:nowrap;padding:6px 0}nav a b{display:none}
+ .credit{display:none}main{padding:28px 18px 80px}.kf{grid-template-columns:1fr 1fr}.kf div:nth-child(3){border-left:0;padding-left:0}
+}
+"""
+
+JS = """
+(function(){
+  var links=[].slice.call(document.querySelectorAll('nav a')), panels=[].slice.call(document.querySelectorAll('.panel'));
+  function show(){
+    var id=(location.hash||'').slice(1); if(!document.getElementById(id)) id='overview';
+    panels.forEach(function(p){p.hidden=(p.id!==id)});
+    links.forEach(function(a){var on=a.getAttribute('href')==='#'+id; a.classList.toggle('on',on); a.setAttribute('aria-current',on?'page':'false')});
+    window.scrollTo(0,0);
+  }
+  window.addEventListener('hashchange',show); show();
+})();
 """
 
 def nice(name):
@@ -92,50 +139,73 @@ def build(out_path, final, dev, audit, queue, figs, funnel, plan, cfg, repo_url,
             extra_lim += f"<li>The Decline share moved only between {pct(min(dec))} and {pct(max(dec))} across cutoffs, but other months and sites may behave differently.</li>"
     if extra.get("top2_client_share") is not None and extra["top2_client_share"] >= 0.30:
         extra_lim += f"<li>A few clients dominate: the two largest hold {pct(extra['top2_client_share'])} of page-windows across {extra['n_clients']} clients, so uncertainty is wide and results may not generalise to other sites.</li>"
-    page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Which pages need attention first? Predicting search-visibility momentum</title><style>{CSS}</style></head><body><main>
-<p class="meta">Research paper · Joanna Dulay · Built on the FlyRank ML Internship dataset</p>
-<h1>Which pages need attention first? Predicting search-visibility momentum from historical signals</h1>
-<h2>Abstract</h2><div class="abs">{e(abstract)}</div>
-<h2>1. Introduction</h2>
-<p>A site can hold thousands of pages and a content team has hours, not weeks. The decision this work supports is <em>which pages to review first</em>. Reviewing a page that would have been fine anyway wastes time; missing a page that was sliding costs visibility. The output is therefore a ranked queue with plain-language reason codes for a person to check, not an automatic action.</p>
-<h2>2. Data</h2>
+    kf = [(f3(m["macro_f1"]), "Model macro F1 · sealed June test"),
+          (f3(b["macro_f1"]), "Best simple baseline · " + final["best_baseline"].replace("_", " ")),
+          (f"{d:+.3f}", f"Difference · 95% interval {lo:+.3f} to {hi:+.3f}"),
+          (f"{final['n_test']:,}", "Held-out pages")]
+    kf_html = '<div class="kf">' + "".join(f"<div><strong>{e(v)}</strong><span>{e(t)}</span></div>" for v, t in kf) + "</div>"
+
+    overview = f"""<h1>Which pages need attention first?</h1>
+<p class="meta">Predicting search-visibility momentum from historical signals · Joanna Dulay · Built on the FlyRank ML Internship dataset</p>
+<h2>Abstract</h2><p class="lead">{e(abstract)}</p>{kf_html}
+<h2>1 · Introduction</h2>
+<p>A site can hold thousands of pages and a content team has hours, not weeks. The decision this work supports is <em>which pages to review first</em>. Reviewing a page that would have been fine anyway wastes time; missing a page that was sliding costs visibility. The output is therefore a ranked queue with plain-language reason codes for a person to check, not an automatic action.</p>"""
+
+    data = f"""<h2>2 · Data</h2>
 <p>Source: the FlyRank ML Internship warehouse, table <code>fact_content_daily_performance</code> (one row per page per day, with Google Search Console and GA4 fields, identifiers pre-hashed). Development used cutoffs up to {e(cfg['dev_end'])}; the month ending {e(cfg['test_end'])} was kept sealed and used once for the final test. A zero is treated as a real zero only on days flagged as GSC-available; unavailable days are excluded rather than filled. Page counts at the final test cutoff ({e(str(plan['test']))}):</p>
 {table(["Step", "Pages"], data_rows)}
 {regime_html}
-<p class="small">No client names, domains, URLs, queries, credentials or raw exports are published.</p>
-<h2>3. Methodology</h2>
-<p><b>Windows.</b> For each cutoff date T: window A = days T−{2*w-1} to T−{w}, window B = T−{w-1} to T (history, used for features), window C = T+1 to T+{w} (outcome, used only for the label). <b>Label.</b> Using impressions per GSC-available day: Growth if C is at least {thr}% above B; Decline if at least {thr}% below; Recovery is Growth where B was itself at least {thr}% below A; otherwise Stable. <b>Features</b> ({len(dev['features'])}): impression level and change, last-7-day slope, CTR and its change, average position and change, volatility, share of active days, data availability, and GA4 coverage/engagement (left missing, not zero-filled, when GA4 was not reporting). <b>Baselines:</b> always-the-majority-class, “last window’s direction continues”, “last window’s move reverses”, and a one-feature “recent slope” rule (a small decision tree using only the last-7-day trend), plus a two-feature “momentum tree” (last-7-day trend and change versus the previous window). The last two are the demanding ones: they show how much of the model’s signal is simply recent momentum. The tree’s depth and class weighting were fixed on validation data only. <b>Validation:</b> time-aware. Training cutoffs are spaced {w} days apart, so no training label window overlaps the next split; the test cutoff comes from the sealed final month. Primary metric: macro F1 (every class counts equally); accuracy is secondary. Uncertainty comes from resampling whole clients.</p>
-<p><b>Leakage checks.</b> (1) Features recomputed after physically deleting all rows after the cutoff were identical (max absolute difference {aud['leakage']['max_abs_diff']:.2g}). (2) No single feature alone reached macro F1 above {aud['leakage']['single_feature_max']:.3f}. (3) Client and page identifiers are never model inputs.</p>
-<h2>4. Results</h2>
+<p class="small">No client names, domains, URLs, queries, credentials or raw exports are published.</p>"""
+
+    method = f"""<h2>3 · Methodology</h2>
+<p><b>Windows.</b> For each cutoff date T: window A = days T−{2*w-1} to T−{w}, window B = T−{w-1} to T (history, used for features), window C = T+1 to T+{w} (outcome, used only for the label).</p>
+<p><b>Label.</b> Using impressions per GSC-available day: Growth if C is at least {thr}% above B; Decline if at least {thr}% below; Recovery is Growth where B was itself at least {thr}% below A; otherwise Stable.</p>
+<p><b>Features</b> ({len(dev['features'])}): impression level and change, last-7-day slope, CTR and its change, average position and change, volatility, share of active days, data availability, and GA4 coverage and engagement (left missing, not zero-filled, when GA4 was not reporting).</p>
+<p><b>Baselines:</b> always the majority class; “last window’s direction continues”; “last window’s move reverses”; a one-feature “recent slope” rule (a small decision tree using only the last-7-day trend); and a two-feature “momentum tree” (last-7-day trend and change versus the previous window). The last two are the demanding ones: they show how much of the model’s signal is simply recent momentum. The trees’ depth and class weighting were fixed on validation data only.</p>
+<p><b>Validation:</b> time-aware. Training cutoffs are spaced {w} days apart, so no training label window overlaps the next split; the test cutoff comes from the sealed final month. Primary metric: macro F1 (every class counts equally); accuracy is secondary. Uncertainty comes from resampling whole clients.</p>
+<p><b>Leakage checks.</b> (1) Features recomputed after physically deleting all rows after the cutoff were identical (max absolute difference {aud['leakage']['max_abs_diff']:.2g}). (2) No single feature alone reached macro F1 above {aud['leakage']['single_feature_max']:.3f}. (3) Client and page identifiers are never model inputs.</p>"""
+
+    results = f"""<h2>4 · Results</h2>
 {cm}{pc}
 {fig(figs,'compare','Macro F1 on the sealed test cutoff: model vs simple baselines')}
-{fig(figs,'confusion','Where the model is right and wrong (rows = observed class, share of that class)')}
 <p>The model’s macro F1 is {verdict}. {e(dev['reading'])}</p>
+{fig(figs,'confusion','Where the model is right and wrong (rows = observed class, share of that class)')}
 <p><b>Why the split matters.</b> The same model scored differently depending on how it was validated:</p>
 {table(["Validation design", "Macro F1"], audit_rows)}
 {bt_html}
-{fig(figs,'importance','Which signals the model leans on (permutation importance, validation set; association, not cause)')}
-<h2>5. Limitations and honest framing</h2>
+{fig(figs,'importance','Which signals the model leans on (permutation importance, validation set; association, not cause)')}"""
+
+    limits = f"""<h2>5 · Limitations and honest framing</h2>
 <ul><li>These are <b>observed, directional</b> associations in one panel of sites; they are not causal and do not show how Google ranks or refreshes pages.</li>
 <li>Labels measure change in impressions, which also moves with seasonality, demand and algorithm updates outside the page’s control.</li>
 <li>Window B appears in both the features and the label’s denominator, so part of the signal is regression to the mean.</li>
 <li>Coverage is uneven: only pages with enough GSC-available days enter ({fn['and_in_C_final']:,} of {fn['pages_seen']:,}), and GA4 is missing for many page-days.</li>
 {extra_lim}<li>One sealed outcome month: results may differ in other months and other sites.</li>
-<li>Class balance is uneven ({', '.join(f'{k} {pct(v)}' for k, v in final['class_share_test'].items())}), so per-class scores matter more than accuracy.</li></ul>
-<h2>6. Ranked recommendations (action playbook)</h2>
+<li>Class balance is uneven ({', '.join(f'{k} {pct(v)}' for k, v in final['class_share_test'].items())}), so per-class scores matter more than accuracy.</li></ul>"""
+
+    playbook = f"""<h2>6 · Ranked recommendations (action playbook)</h2>
 <p>Queue logic: <b>review_decline_risk</b> = the top {int(q['decline_top_share']*100)}% of pages by (predicted decline probability × observed impressions); <b>watch_recovery</b> and <b>support_growth</b> = highest predicted Recovery / Growth probability. Each row carries reason codes derived from the page’s own recent signals. Checked on the sealed month:</p>
 {table(["Queue slice", "Pages", "Actually declined", "Lift vs all pages"], ev_rows)}
 <p class="small">Base rate of Decline across all test pages: {pct(q['base_decline'])}.</p>
 {rec_note}
-{fig(figs,'lift','Share of flagged pages that actually declined in the next 28 days vs the base rate')}
-<p><b>Human review before acting:</b> check for a known cause (seasonality, migration, tracking change); never auto-rewrite, merge or delete a page from this list. <b>Stale triggers:</b> re-evaluate when macro F1 on the newest labelled cutoff drops below the best baseline, or any key feature’s population stability index exceeds 0.25 (current largest: {e(queue['drift_top_feature'])} at {queue['drift_top_psi']:.2f}).</p>
-<h2>7. Reproducibility</h2>
+{fig(figs,'lift','Share of flagged pages that actually declined in the next 28 days (orange = model queue; line = all pages)')}
+<p><b>Human review before acting:</b> check for a known cause (seasonality, migration, tracking change); never auto-rewrite, merge or delete a page from this list. <b>Stale triggers:</b> re-evaluate when macro F1 on the newest labelled cutoff drops below the best baseline, or any key feature’s population stability index exceeds 0.25 (current largest: {e(queue['drift_top_feature'])} at {queue['drift_top_psi']:.2f}).</p>"""
+
+    repro = f"""<h2>7 · Reproducibility</h2>
 <p>All code is in <a href="{e(repo_url)}" target="_blank" rel="noopener">the project repository</a>: notebooks <code>w04_signal_audit</code>, <code>w05_model</code>, <code>w06_validation_audit</code>, <code>w07_action_playbook</code> and <code>capstone</code> under <code>work/notebooks/</code>, shared code in <code>work/src/</code>. Fixed seed {cfg['seed']}. Rebuilding the page-level tables can reorder rows, so a re-run may differ from the reported scores in the third decimal place.</p>
-<h2>8. Acknowledgments and data credit</h2>
-<p>Built on the FlyRank ML Internship dataset — <a href="https://flyrank.ai" target="_blank" rel="noopener">flyrank.ai</a>.</p>
-</main></body></html>"""
+<h2>8 · Acknowledgments and data credit</h2>
+<p>Built on the FlyRank ML Internship dataset — <a href="https://flyrank.ai" target="_blank" rel="noopener">flyrank.ai</a>.</p>"""
+
+    tabs = [("overview", "Overview", overview), ("data", "Data", data), ("method", "Method", method), ("results", "Results", results),
+            ("limits", "Limits", limits), ("playbook", "Playbook", playbook), ("repro", "Repro + credit", repro)]
+    nav = "".join(f'<a href="#{i}"><b>{n:02d}</b>{e(l)}</a>' for n, (i, l, _) in enumerate(tabs, 1))
+    panels = "".join(f'<section class="panel" id="{i}" aria-label="{e(l)}">{h}</section>' for i, l, h in tabs)
+    page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Which pages need attention first? Predicting search-visibility momentum</title><style>{CSS}</style></head><body>
+<div class="shell"><aside><div><div class="brand">Search visibility<br>momentum</div><nav>{nav}</nav></div>
+<div class="credit">Built on the FlyRank ML Internship dataset<br><a href="https://flyrank.ai" target="_blank" rel="noopener">flyrank.ai</a></div></aside>
+<main>{panels}</main></div><script>{JS}</script></body></html>"""
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     open(out_path, "w", encoding="utf-8").write(page)
     return out_path
