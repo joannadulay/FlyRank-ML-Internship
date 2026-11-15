@@ -1,0 +1,187 @@
+{
+ "evidence": {
+  "precision_at_k": [
+   {
+    "name": "Top 100 by risk",
+    "n": 100,
+    "share_declined": 0.76,
+    "lift": 1.2576466108149276
+   },
+   {
+    "name": "Top 500 by risk",
+    "n": 500,
+    "share_declined": 0.808,
+    "lift": 1.337076923076923
+   },
+   {
+    "name": "Top 1,000 by risk",
+    "n": 1000,
+    "share_declined": 0.791,
+    "lift": 1.3089453541507998
+   },
+   {
+    "name": "review_decline_risk (top 5%)",
+    "n": 4345,
+    "share_declined": 0.7924050632911392,
+    "lift": 1.3112704503166968
+   },
+   {
+    "name": "Naive: biggest recent fall x volume (top 5%)",
+    "n": 4345,
+    "share_declined": 0.7558112773302647,
+    "lift": 1.2507151201975115
+   },
+   {
+    "name": "Naive: weakest last-week trend x volume (top 5%)",
+    "n": 4345,
+    "share_declined": 0.8771001150747986,
+    "lift": 1.4514236671963203
+   }
+  ],
+  "base_decline": 0.6043033022667127,
+  "decline_top_share": 0.05,
+  "other": {
+   "watch_recovery_share_recovery": 0.39355581127733025,
+   "base_recovery": 0.06347946151190888,
+   "support_growth_share_growth": 0.42616033755274263,
+   "base_growth": 0.07893222874237717
+  }
+ },
+ "drift_top_feature": "pos_B",
+ "drift_top_psi": 0.5543183374081065,
+ "drift_table": {
+  "pos_B": 0.5543,
+  "ga4_cov_B": 0.3517,
+  "d_impr": 0.2748,
+  "d_pos": 0.2582,
+  "org_per_day_B": 0.1201,
+  "d_ctr": 0.0598,
+  "ctr_B": 0.0434,
+  "r7": 0.0279,
+  "cv_B": 0.015,
+  "log_rate_B": 0.0149,
+  "eng_per_day_B": 0.0115,
+  "avail_share_B": 0.0006,
+  "active_share_B": 0.0
+ },
+ "triggers": {
+  "macro_f1_below_best_baseline_on_newest_labelled_cutoff": true,
+  "any_feature_psi_above": 0.25,
+  "decline_base_rate_moves_by_more_than_points": 5,
+  "share_of_pages_with_gsc_available_days_below": 0.6,
+  "check_after_events": [
+   "site migration",
+   "tracking change",
+   "Search Console outage",
+   "major search update"
+  ],
+  "cadence": "re-score monthly; re-fit when a trigger fires"
+ },
+ "preview": [
+  {
+   "rank": 1,
+   "action": "review_decline_risk",
+   "reasons": "short_term_slide;high_volume",
+   "p_decline": 0.38,
+   "impressions_28d_rounded": 596400
+  },
+  {
+   "rank": 2,
+   "action": "review_decline_risk",
+   "reasons": "short_term_slide;ctr_below_peers;high_volume;volatile",
+   "p_decline": 0.91,
+   "impressions_28d_rounded": 198300
+  },
+  {
+   "rank": 3,
+   "action": "review_decline_risk",
+   "reasons": "short_term_slide;ctr_below_peers;high_volume",
+   "p_decline": 0.89,
+   "impressions_28d_rounded": 194700
+  },
+  {
+   "rank": 4,
+   "action": "review_decline_risk",
+   "reasons": "high_volume",
+   "p_decline": 0.41,
+   "impressions_28d_rounded": 360700
+  },
+  {
+   "rank": 5,
+   "action": "review_decline_risk",
+   "reasons": "falling_impressions;short_term_slide;ctr_below_peers;high_volume",
+   "p_decline": 0.84,
+   "impressions_28d_rounded": 140400
+  },
+  {
+   "rank": 6,
+   "action": "review_decline_risk",
+   "reasons": "ctr_below_peers;high_volume;volatile",
+   "p_decline": 0.77,
+   "impressions_28d_rounded": 145000
+  },
+  {
+   "rank": 7,
+   "action": "review_decline_risk",
+   "reasons": "high_volume;volatile",
+   "p_decline": 0.41,
+   "impressions_28d_rounded": 263600
+  },
+  {
+   "rank": 8,
+   "action": "review_decline_risk",
+   "reasons": "short_term_slide;high_volume",
+   "p_decline": 0.79,
+   "impressions_28d_rounded": 128000
+  },
+  {
+   "rank": 9,
+   "action": "review_decline_risk",
+   "reasons": "falling_impressions;short_term_slide;high_volume",
+   "p_decline": 0.67,
+   "impressions_28d_rounded": 148300
+  },
+  {
+   "rank": 10,
+   "action": "review_decline_risk",
+   "reasons": "short_term_slide;position_worsening;ctr_below_peers;high_volume",
+   "p_decline": 0.73,
+   "impressions_28d_rounded": 123400
+  },
+  {
+   "rank": 11,
+   "action": "review_decline_risk",
+   "reasons": "short_term_slide;position_worsening;high_volume",
+   "p_decline": 0.44,
+   "impressions_28d_rounded": 195100
+  },
+  {
+   "rank": 12,
+   "action": "review_decline_risk",
+   "reasons": "high_volume;volatile",
+   "p_decline": 0.31,
+   "impressions_28d_rounded": 258900
+  },
+  {
+   "rank": 13,
+   "action": "review_decline_risk",
+   "reasons": "ctr_below_peers;high_volume;volatile",
+   "p_decline": 0.69,
+   "impressions_28d_rounded": 115100
+  },
+  {
+   "rank": 14,
+   "action": "review_decline_risk",
+   "reasons": "position_worsening;ctr_below_peers;high_volume;volatile",
+   "p_decline": 0.68,
+   "impressions_28d_rounded": 112300
+  },
+  {
+   "rank": 15,
+   "action": "review_decline_risk",
+   "reasons": "short_term_slide;position_worsening;ctr_below_peers;high_volume",
+   "p_decline": 0.85,
+   "impressions_28d_rounded": 83800
+  }
+ ]
+}
