@@ -49,6 +49,20 @@ def build(out_path, final, dev, audit, queue, figs, funnel, plan, cfg, repo_url,
         [[k.replace("_", " ") + " rule", f3(v["macro_f1"]), f3(v["accuracy"])] for k, v in final["baselines"].items()])
     pc = table(["Class", "Share of test pages", "Model F1", "Best-baseline F1"], [
         [c, pct(final["class_share_test"].get(c, 0)), f3(m["per_class_f1"][c]), f3(b["per_class_f1"][c])] for c in m["per_class_f1"]])
+    rec_note = ""
+    rows_q = {r["name"]: r for r in q["precision_at_k"]}
+    mq = rows_q.get("review_decline_risk (top 5%)")
+    sq = next((r for k, r in rows_q.items() if "last-week trend" in k), None)
+    if mq and sq:
+        if sq["share_declined"] > mq["share_declined"]:
+            rec_note += (f"<p><b>Reading the table honestly.</b> Ranking pages by the weakest last-week trend alone found a higher share of true decliners "
+                         f"({pct(sq['share_declined'])}) than the model-based queue ({pct(mq['share_declined'])}). For decline risk alone, the simple rule was the better choice on this month.</p>")
+        else:
+            rec_note += (f"<p><b>Reading the table honestly.</b> The model-based queue ({pct(mq['share_declined'])} declined) ranked at least as well as the simple last-week-trend rule ({pct(sq['share_declined'])}) on this month.</p>")
+    oth = q.get("other")
+    if oth:
+        rec_note += (f"<p>The model’s distinct contribution is the other two slices: pages in <b>watch_recovery</b> actually recovered {pct(oth['watch_recovery_share_recovery'])} of the time (all pages: {pct(oth['base_recovery'])}), "
+                     f"and pages in <b>support_growth</b> actually grew {pct(oth['support_growth_share_growth'])} of the time (all pages: {pct(oth['base_growth'])}).</p>")
     fn = funnel
     data_rows = [["Pages with any GSC row in the 3 windows", f"{fn['pages_seen']:,}"],
                  [f"≥{cfg['min_avail_days']} GSC-available days in window B", f"{fn['gsc_ok_in_B']:,}"],
@@ -114,6 +128,7 @@ def build(out_path, final, dev, audit, queue, figs, funnel, plan, cfg, repo_url,
 <p>Queue logic: <b>review_decline_risk</b> = the top {int(q['decline_top_share']*100)}% of pages by (predicted decline probability × observed impressions); <b>watch_recovery</b> and <b>support_growth</b> = highest predicted Recovery / Growth probability. Each row carries reason codes derived from the page’s own recent signals. Checked on the sealed month:</p>
 {table(["Queue slice", "Pages", "Actually declined", "Lift vs all pages"], ev_rows)}
 <p class="small">Base rate of Decline across all test pages: {pct(q['base_decline'])}.</p>
+{rec_note}
 {fig(figs,'lift','Share of flagged pages that actually declined in the next 28 days vs the base rate')}
 <p><b>Human review before acting:</b> check for a known cause (seasonality, migration, tracking change); never auto-rewrite, merge or delete a page from this list. <b>Stale triggers:</b> re-evaluate when macro F1 on the newest labelled cutoff drops below the best baseline, or any key feature’s population stability index exceeds 0.25 (current largest: {e(queue['drift_top_feature'])} at {queue['drift_top_psi']:.2f}).</p>
 <h2>7. Reproducibility</h2>
