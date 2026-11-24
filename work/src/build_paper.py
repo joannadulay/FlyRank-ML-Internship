@@ -7,45 +7,39 @@ CSS = """
 @font-face{font-family:"Helios Extended";font-display:swap;
   src:local("Helios Extended"),local("HeliosExtended"),local("Helios-Extended"),
       url("fonts/HeliosExtended.woff2") format("woff2"),url("fonts/HeliosExtended.woff") format("woff");}
-:root{--bg:#f4f3ef;--ink:#111;--mut:#6f6e68;--line:#111;--hair:#cfcdc4;--acc:#ff4f00;
+:root{--bg:#fff;--ink:#14101c;--mut:#6b6479;--hair:#e4def2;--tint:#f4f0fc;--p1:#3b1d73;--p2:#6d3fc4;--p3:#b9a2e8;
   --f:"Helios Extended","Archivo","Helvetica Neue",Arial,sans-serif}
-*{box-sizing:border-box}html{scroll-behavior:auto}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.65 var(--f);font-stretch:125%;-webkit-font-smoothing:antialiased}
-a{color:var(--ink);text-decoration-thickness:1px;text-underline-offset:3px}a:hover{color:var(--acc)}
-.shell{display:grid;grid-template-columns:250px minmax(0,1fr);min-height:100vh}
-aside{position:sticky;top:0;height:100vh;padding:28px 24px;border-right:1px solid var(--line);display:flex;flex-direction:column;justify-content:space-between}
-.brand{font-weight:800;font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;line-height:1.4}
-nav{margin-top:36px;display:flex;flex-direction:column}
-nav a{display:flex;gap:14px;padding:9px 0;border-top:1px solid var(--hair);text-decoration:none;font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;color:var(--mut)}
-nav a b{font-weight:600;min-width:1.6em}nav a:last-child{border-bottom:1px solid var(--hair)}
-nav a:hover{color:var(--ink)}nav a.on{color:var(--ink);font-weight:800}nav a.on b{color:var(--acc)}
-.credit{font-size:.66rem;line-height:1.5;color:var(--mut);letter-spacing:.03em}
-main{padding:56px 64px 120px 56px}
-.panel{max-width:920px}
-h1{font-weight:800;font-size:clamp(1.9rem,4vw,3.4rem);line-height:1.04;letter-spacing:-.015em;text-transform:uppercase;margin:.15em 0 .5em}
-h2{font-weight:800;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;border-top:2px solid var(--line);padding-top:10px;margin:2.6em 0 .9em}
-h2:first-of-type{margin-top:0}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.7 var(--f);font-stretch:125%;-webkit-font-smoothing:antialiased;
+  border-left:14px solid var(--p2);min-height:100vh}
+a{color:var(--p2);text-underline-offset:3px}a:hover{color:var(--p1)}
+header{padding:40px 56px 0 48px}
+.name{font-weight:800;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;margin:0;color:var(--p1)}
+.sub{margin:2px 0 0;font-size:.74rem;color:var(--mut);letter-spacing:.03em}
+nav{display:flex;flex-wrap:wrap;gap:0 28px;margin-top:30px;border-bottom:1px solid var(--hair)}
+nav a{padding:10px 0;margin-bottom:-1px;text-decoration:none;color:var(--mut);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;border-bottom:2px solid transparent}
+nav a:hover{color:var(--ink)}nav a.on{color:var(--ink);font-weight:800;border-bottom-color:var(--p2)}
+main{padding:44px 56px 40px 48px}
+.panel{max-width:800px}
+h1{font-weight:800;font-size:clamp(1.7rem,3.4vw,2.7rem);line-height:1.1;letter-spacing:-.01em;margin:0 0 .5em}
+h2{font-weight:800;font-size:.8rem;letter-spacing:.09em;text-transform:uppercase;color:var(--p1);margin:2.4em 0 .8em}
+h2:first-child{margin-top:0}
 p{margin:0 0 1em;max-width:68ch}ul{padding-left:1.1em;max-width:68ch}li{margin-bottom:.5em}
 .meta,figcaption,.small{color:var(--mut);font-size:.74rem;letter-spacing:.02em}
-.lead{font-size:1.05rem;line-height:1.55;max-width:60ch;border-left:4px solid var(--acc);padding-left:18px;margin:1.4em 0 2em}
-.kf{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:2px solid var(--line);border-bottom:1px solid var(--line);margin:2em 0}
-.kf div{padding:16px 16px 16px 0}.kf div+div{padding-left:16px;border-left:1px solid var(--hair)}
-.kf strong{display:block;font-weight:800;font-size:clamp(1.4rem,2.6vw,2.2rem);letter-spacing:-.02em;line-height:1.1}
-.kf span{font-size:.68rem;letter-spacing:.05em;text-transform:uppercase;color:var(--mut);display:block;margin-top:6px}
+.lead{font-size:1rem;line-height:1.65;max-width:62ch;margin:0 0 1.6em}
+.nums{margin:1.6em 0 2em;max-width:560px;border-top:1px solid var(--ink)}
+.nums div{display:flex;justify-content:space-between;align-items:baseline;gap:20px;padding:10px 0;border-bottom:1px solid var(--hair)}
+.nums dt{font-size:.74rem;letter-spacing:.03em;color:var(--mut)}
+.nums dd{margin:0;font-weight:800;font-size:1.25rem;color:var(--p2);font-variant-numeric:tabular-nums}
 table{border-collapse:collapse;width:100%;font-size:.78rem;margin:1.2em 0;font-variant-numeric:tabular-nums}
-th{font-size:.64rem;letter-spacing:.07em;text-transform:uppercase;font-weight:600;color:var(--mut);text-align:right;padding:6px 10px;border-bottom:1px solid var(--line)}
+th{font-size:.64rem;letter-spacing:.07em;text-transform:uppercase;font-weight:600;color:var(--p1);text-align:right;padding:6px 10px;border-bottom:1px solid var(--ink)}
 td{padding:7px 10px;border-bottom:1px solid var(--hair);text-align:right}th:first-child,td:first-child{text-align:left;padding-left:0}
-.wrap{overflow-x:auto}figure{margin:1.8em 0;max-width:760px}img{max-width:100%;height:auto;display:block}
-figcaption{margin-top:8px}code{font-size:.9em;background:#e9e7df;padding:1px 5px}
-.tag{display:inline-block;background:var(--ink);color:var(--bg);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;padding:2px 8px;margin-right:8px}
+.wrap{overflow-x:auto}figure{margin:1.8em 0;max-width:740px}img{max-width:100%;height:auto;display:block}
+figcaption{margin-top:8px}code{font-size:.9em;background:var(--tint);padding:1px 5px}
+footer{padding:0 56px 48px 48px;color:var(--mut);font-size:.72rem;letter-spacing:.03em}
 .panel[hidden]{display:none}
-@media (max-width:900px){
- .shell{grid-template-columns:1fr}
- aside{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);padding:16px 18px}
- nav{flex-direction:row;overflow-x:auto;margin-top:12px;gap:18px}
- nav a{border:0!important;white-space:nowrap;padding:6px 0}nav a b{display:none}
- .credit{display:none}main{padding:28px 18px 80px}.kf{grid-template-columns:1fr 1fr}.kf div:nth-child(3){border-left:0;padding-left:0}
-}
+@media (max-width:700px){body{border-left-width:8px}header{padding:24px 18px 0 16px}main{padding:28px 18px 24px 16px}footer{padding:0 18px 36px 16px}
+ nav{gap:0 18px}.nums dd{font-size:1.05rem}}
 """
 
 JS = """
@@ -139,15 +133,16 @@ def build(out_path, final, dev, audit, queue, figs, funnel, plan, cfg, repo_url,
             extra_lim += f"<li>The Decline share moved only between {pct(min(dec))} and {pct(max(dec))} across cutoffs, but other months and sites may behave differently.</li>"
     if extra.get("top2_client_share") is not None and extra["top2_client_share"] >= 0.30:
         extra_lim += f"<li>A few clients dominate: the two largest hold {pct(extra['top2_client_share'])} of page-windows across {extra['n_clients']} clients, so uncertainty is wide and results may not generalise to other sites.</li>"
-    kf = [(f3(m["macro_f1"]), "Model macro F1 · sealed June test"),
-          (f3(b["macro_f1"]), "Best simple baseline · " + final["best_baseline"].replace("_", " ")),
-          (f"{d:+.3f}", f"Difference · 95% interval {lo:+.3f} to {hi:+.3f}"),
-          (f"{final['n_test']:,}", "Held-out pages")]
-    kf_html = '<div class="kf">' + "".join(f"<div><strong>{e(v)}</strong><span>{e(t)}</span></div>" for v, t in kf) + "</div>"
+    NAME = "Mary Joanna Cathaline S. Dulay"
+    nums = [("Model macro F1 · sealed June test", f3(m["macro_f1"])),
+            ("Best simple baseline · " + final["best_baseline"].replace("_", " "), f3(b["macro_f1"])),
+            (f"Difference · 95% interval {lo:+.3f} to {hi:+.3f}", f"{d:+.3f}"),
+            ("Held-out pages", f"{final['n_test']:,}")]
+    nums_html = '<dl class="nums">' + "".join(f"<div><dt>{e(t)}</dt><dd>{e(v)}</dd></div>" for t, v in nums) + "</dl>"
 
     overview = f"""<h1>Which pages need attention first?</h1>
-<p class="meta">Predicting search-visibility momentum from historical signals · Joanna Dulay · Built on the FlyRank ML Internship dataset</p>
-<h2>Abstract</h2><p class="lead">{e(abstract)}</p>{kf_html}
+<p class="meta">{e(NAME)} · Built on the FlyRank ML Internship dataset</p>
+<h2>Abstract</h2><p class="lead">{e(abstract)}</p>{nums_html}
 <h2>1 · Introduction</h2>
 <p>A site can hold thousands of pages and a content team has hours, not weeks. The decision this work supports is <em>which pages to review first</em>. Reviewing a page that would have been fine anyway wastes time; missing a page that was sliding costs visibility. The output is therefore a ranked queue with plain-language reason codes for a person to check, not an automatic action.</p>"""
 
@@ -188,7 +183,7 @@ def build(out_path, final, dev, audit, queue, figs, funnel, plan, cfg, repo_url,
 {table(["Queue slice", "Pages", "Actually declined", "Lift vs all pages"], ev_rows)}
 <p class="small">Base rate of Decline across all test pages: {pct(q['base_decline'])}.</p>
 {rec_note}
-{fig(figs,'lift','Share of flagged pages that actually declined in the next 28 days (orange = model queue; line = all pages)')}
+{fig(figs,'lift','Share of flagged pages that actually declined in the next 28 days (purple = model queue; dashed line = all pages)')}
 <p><b>Human review before acting:</b> check for a known cause (seasonality, migration, tracking change); never auto-rewrite, merge or delete a page from this list. <b>Stale triggers:</b> re-evaluate when macro F1 on the newest labelled cutoff drops below the best baseline, or any key feature’s population stability index exceeds 0.25 (current largest: {e(queue['drift_top_feature'])} at {queue['drift_top_psi']:.2f}).</p>"""
 
     repro = f"""<h2>7 · Reproducibility</h2>
@@ -198,14 +193,15 @@ def build(out_path, final, dev, audit, queue, figs, funnel, plan, cfg, repo_url,
 
     tabs = [("overview", "Overview", overview), ("data", "Data", data), ("method", "Method", method), ("results", "Results", results),
             ("limits", "Limits", limits), ("playbook", "Playbook", playbook), ("repro", "Repro + credit", repro)]
-    nav = "".join(f'<a href="#{i}"><b>{n:02d}</b>{e(l)}</a>' for n, (i, l, _) in enumerate(tabs, 1))
+    nav = "".join(f'<a href="#{i}">{e(l)}</a>' for i, l, _ in tabs)
     panels = "".join(f'<section class="panel" id="{i}" aria-label="{e(l)}">{h}</section>' for i, l, h in tabs)
     page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Which pages need attention first? Predicting search-visibility momentum</title><style>{CSS}</style></head><body>
-<div class="shell"><aside><div><div class="brand">Search visibility<br>momentum</div><nav>{nav}</nav></div>
-<div class="credit">Built on the FlyRank ML Internship dataset<br><a href="https://flyrank.ai" target="_blank" rel="noopener">flyrank.ai</a></div></aside>
-<main>{panels}</main></div><script>{JS}</script></body></html>"""
+<meta name="viewport" content="width=device-width, initial-scale=1"><meta name="author" content="{e(NAME)}">
+<title>Which pages need attention first? · {e(NAME)}</title><style>{CSS}</style></head><body>
+<header><p class="name">{e(NAME)}</p><p class="sub">Research paper · Predicting search-visibility momentum</p><nav>{nav}</nav></header>
+<main>{panels}</main>
+<footer>Built on the FlyRank ML Internship dataset · <a href="https://flyrank.ai" target="_blank" rel="noopener">flyrank.ai</a></footer>
+<script>{JS}</script></body></html>"""
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     open(out_path, "w", encoding="utf-8").write(page)
     return out_path
