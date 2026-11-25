@@ -1,5 +1,5 @@
 """Builds site/index.html from the JSON files the notebooks write. No number in the page is typed by hand."""
-import html, json, os
+import html, json, os, re
 e = html.escape
 
 CSS = """
@@ -49,6 +49,13 @@ th{font-size:.72rem;letter-spacing:.07em;text-transform:uppercase;font-weight:60
 td{padding:9px 12px;border-bottom:1px solid var(--hair);text-align:right}th:first-child,td:first-child{text-align:left;padding-left:0}
 .wrap{overflow-x:auto}code{font-size:.9em;background:var(--tint);padding:1px 6px}
 footer{padding:0 var(--pad) 56px;color:var(--mut);font-size:.82rem;letter-spacing:.03em}
+.term{border-bottom:1.5px dotted var(--p2);cursor:help}.term:hover,.term:focus,.term.open{background:var(--p4);outline:none}
+.tip{position:fixed;z-index:60;max-width:370px;background:#fff;border:1.5px solid var(--ink);box-shadow:5px 5px 0 var(--p4);padding:14px 18px 12px;font-size:.86rem;line-height:1.55}
+.tip[hidden]{display:none}.tip .tl{display:block;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--p2);font-weight:800}
+.tip strong{display:block;font-size:1.05rem;margin:2px 0 6px}.tip p{margin:0;max-width:none}
+.tip .here{border-top:1px solid var(--hair);margin-top:9px;padding-top:8px;color:var(--p1)}.tip .here b{font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--p2);display:block}
+.hint{padding:14px var(--pad) 0;margin:0;max-width:none;color:var(--mut);font-size:.8rem}.hint .term{cursor:default}
+.gloss dt{font-weight:800;margin-top:1.1em}.gloss dd{margin:.25em 0 0;max-width:70ch}
 .panel[hidden]{display:none}
 @media (max-width:900px){.hero{grid-template-columns:1fr;gap:32px}.panel figure.win:nth-of-type(even){margin-left:0}}
 @media (max-width:700px){html{font-size:16px}:root{--pad:16px}.top{flex-direction:column;align-items:flex-start;gap:2px}nav{gap:8px;padding-top:20px}main{padding-top:30px}}
@@ -65,7 +72,108 @@ JS = """
   }
   window.addEventListener('hashchange',show); show();
 })();
+
+(function(){
+  var G=__GLOSS__, tip=document.createElement('div'), hideT=null, cur=null;
+  tip.className='tip'; tip.id='tip'; tip.setAttribute('role','tooltip'); tip.hidden=true; document.body.appendChild(tip);
+  function fill(g){
+    tip.textContent='';
+    function el(t,c,x){var n=document.createElement(t); if(c) n.className=c; n.textContent=x; return n;}
+    tip.appendChild(el('span','tl','What it means')); tip.appendChild(el('strong','',g.t)); tip.appendChild(el('p','',g.d));
+    var h=document.createElement('p'); h.className='here'; h.appendChild(el('b','','In this paper')); h.appendChild(document.createTextNode(g.h)); tip.appendChild(h);
+  }
+  function place(el){
+    var r=el.getBoundingClientRect(), w=tip.offsetWidth, h=tip.offsetHeight;
+    var left=Math.min(Math.max(8,r.left+r.width/2-w/2),window.innerWidth-w-8), top=r.top-h-12;
+    if(top<8) top=r.bottom+12; tip.style.left=left+'px'; tip.style.top=top+'px';
+  }
+  function open(el){var g=G[el.getAttribute('data-k')]; if(!g) return; clearTimeout(hideT); if(cur) cur.classList.remove('open');
+    fill(g); tip.hidden=false; place(el); cur=el; el.classList.add('open'); el.setAttribute('aria-describedby','tip');}
+  function close(){tip.hidden=true; if(cur){cur.classList.remove('open'); cur.removeAttribute('aria-describedby'); cur=null;}}
+  function later(){clearTimeout(hideT); hideT=setTimeout(close,180);}
+  document.addEventListener('mouseover',function(e){var t=e.target.closest&&e.target.closest('.term'); if(t) open(t); else if(e.target.closest&&e.target.closest('#tip')) clearTimeout(hideT);});
+  document.addEventListener('mouseout',function(e){if(e.target.closest&&(e.target.closest('.term')||e.target.closest('#tip'))) later();});
+  document.addEventListener('focusin',function(e){var t=e.target.closest&&e.target.closest('.term'); if(t) open(t);});
+  document.addEventListener('focusout',function(e){if(e.target.closest&&e.target.closest('.term')) later();});
+  document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('.term'); if(t){ if(cur===t&&!tip.hidden) close(); else open(t);} else if(!e.target.closest('#tip')) close();});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape') close();});
+  window.addEventListener('scroll',close,true); window.addEventListener('hashchange',close);
+})();
 """
+
+
+# term key -> (title, what it means, how it is used in this paper, [regex alternatives that should trigger the pop-up])
+GLOSSARY = {
+ "macro-f1": ("Macro F1", "A score from 0 to 1 for a classifier. For each outcome it balances precision (how often a prediction is right) and recall (how many real cases are found), then averages the outcomes with equal weight.", "The paper’s main score. Every outcome counts equally, so a rare one like Recovery matters as much as a common one.", [r"macro F1"]),
+ "f1": ("F1", "A score from 0 to 1 that combines precision and recall for one outcome.", "Shown for each outcome separately: Growth, Recovery, Stable and Decline.", [r"F1"]),
+ "gsc": ("GSC (Google Search Console)", "Google’s free tool that reports how a site shows up in Google Search: how often it appeared, how often it was clicked, and where it ranked.", "The source of the daily search numbers. Days when GSC data was missing are skipped, never counted as zero.", [r"Google Search Console", r"Search Console", r"GSC"]),
+ "ga4": ("GA4 (Google Analytics 4)", "Google’s analytics tool that records what visitors do on a site, such as sessions and engagement.", "Used for extra engagement signals. It is missing for many pages, so gaps are left blank, not filled with zeros.", [r"GA4"]),
+ "ctr": ("CTR (click-through rate)", "Clicks divided by impressions: of everyone who saw the page in search results, the share who clicked it.", "One of the signals, together with how much it changed since the previous window.", [r"CTR", r"click-through rate"]),
+ "impressions": ("Impressions", "How many times a page appeared in search results, whether or not anyone clicked.", "The paper’s measure of visibility. Labels come from the change in impressions per day.", [r"impressions?"]),
+ "baseline": ("Baseline", "A simple method used as a yardstick. A model is only useful if it beats a fair baseline.", "Several baselines are compared, from always guessing the most common outcome to a small two-signal tree.", [r"baselines?"]),
+ "sealed": ("Sealed test", "Data kept out of sight and used for one final check, after every choice is frozen, so the score is not flattered by tuning.", "The final month was sealed and scored once.", [r"sealed"]),
+ "leakage": ("Leakage", "When information from the future sneaks into a model’s inputs, making it look better than it would in real use.", "Checked by deleting every later row and rebuilding the signals. They came out identical.", [r"leakage"]),
+ "time-split": ("Time-aware split", "Training on earlier dates and testing on later ones, the way the model would really be used.", "Training cutoffs are spaced 28 days apart, so no outcome window overlaps the next split.", [r"time-aware"]),
+ "random-split": ("Random split", "Shuffling rows into training and test sets without looking at dates. The same page can land on both sides, which flatters the score.", "Shown only to measure how much a careless test would overstate the result.", [r"random (?:row )?split"]),
+ "cutoff": ("Cutoff", "The date a prediction is made. Only data up to that day is used as input.", "Each page is scored at several cutoffs, 28 days apart.", [r"cutoffs?"]),
+ "window": ("Window", "A fixed stretch of days used to build signals or outcomes.", "A and B are 28 days of history. C is the next 28 days, whose result becomes the label.", [r"windows?"]),
+ "label": ("Label", "The correct answer a model learns to predict.", "Growth, Recovery, Stable or Decline, worked out from the change in impressions over the next 28 days.", [r"labels?"]),
+ "features": ("Features", "The input signals a model looks at for each page.", "Signals such as the last-7-day trend, CTR, position and how jumpy the traffic is.", [r"features?"]),
+ "recent-slope": ("Recent-slope rule", "A tiny decision tree that uses one signal only: the page’s last-7-day trend compared with its 28-day average.", "A demanding baseline. It shows how much of the model’s skill is just recent momentum.", [r"recent[- ]slope"]),
+ "momentum-tree": ("Momentum tree", "A small decision tree using two signals: the last-7-day trend and the change from the previous 28 days.", "The strongest simple baseline in this study.", [r"momentum tree"]),
+ "decision-tree": ("Decision tree", "A model that predicts by answering a short chain of yes/no questions about the inputs.", "The simple baselines are small trees that can be read in full.", [r"decision trees?"]),
+ "boosting": ("Gradient boosting", "A method that builds many small decision trees one after another, each fixing the mistakes of the ones before.", "The main model. “Histogram” means it groups values into bins first, which makes it fast.", [r"(?:histogram )?gradient boosting"]),
+ "interval": ("95% interval", "A range that would contain the true difference about 95 times out of 100 if the study were repeated. If it includes zero, the difference is not reliable.", "Worked out by resampling whole clients.", [r"95% interval"]),
+ "resampling": ("Resampling", "Re-drawing random samples from the data many times to see how much a result would wobble.", "Whole clients are redrawn together, because pages on one site are not independent.", [r"resampling"]),
+ "lift": ("Lift", "How many times more often something happens in a chosen group than overall.", "A lift of 1.3× means flagged pages declined 1.3 times as often as pages overall.", [r"lift"]),
+ "psi": ("Population stability index (PSI)", "A measure of how much a signal’s distribution has shifted between two periods. About 0.1 is small and above 0.25 is large.", "A re-fit trigger: if a key signal passes 0.25, the model should be re-checked.", [r"population stability index", r"PSI"]),
+ "rttm": ("Regression to the mean", "Pages with unusually high or low traffic tend to drift back toward average next time, even if nothing is done.", "Part of the signal may be this, because window B sits in both the inputs and the label.", [r"regression to the mean"]),
+ "directional": ("Directional", "Shows which way things tend to move, without proving why or by exactly how much.", "How this paper frames its findings.", [r"directional"]),
+ "causal": ("Causal", "One thing making another happen. This study only sees patterns, so it cannot show causes.", "The paper makes no causal claims.", [r"causal"]),
+ "decision-support": ("Decision-support", "A tool that helps a person decide, rather than deciding for them.", "The ranked list is a starting point for human review, not an automatic action.", [r"decision[- ]support"]),
+ "perm": ("Permutation importance", "Shuffle one signal and see how much the score drops. A bigger drop means the model leans on that signal more.", "Shows association, not proof of cause.", [r"permutation importance"]),
+ "unseen": ("Unseen clients", "Test pages from sites that were completely absent from training.", "A check that the model does not just memorise particular sites.", [r"unseen clients"]),
+ "client": ("Client", "One website (brand) in the dataset.", "Names are hidden. Only coded IDs exist.", [r"clients?"]),
+ "hashed": ("Hashed", "Replaced by a one-way code, so the original name cannot be recovered.", "Client and page identifiers are hashed.", [r"pre-hashed", r"hashed"]),
+ "seed": ("Seed", "A starting number for random choices, so the same run gives the same result.", "Fixed, so the experiments can be repeated.", [r"seed"]),
+ "reason-codes": ("Reason codes", "Short plain labels, like falling_impressions, that say why a page was flagged.", "Worked out from each page’s own recent signals so a person can check them.", [r"reason codes?"]),
+ "review": ("review_decline_risk", "A queue slice: pages with the highest predicted chance of declining, weighted by how much traffic they carry.", "The top 5% of pages by that score.", [r"review_decline_risk"]),
+ "watch": ("watch_recovery", "A queue slice: pages predicted to bounce back after a fall.", "Look, but do not rewrite a page that is already recovering.", [r"watch_recovery"]),
+ "support": ("support_growth", "A queue slice: pages predicted to keep growing.", "Candidates to protect and support.", [r"support_growth"]),
+ "recovery": ("Recovery", "An outcome class: a page that fell in the previous window and then rose by at least 25%.", "The rarest and hardest class to predict.", [r"Recovery"]),
+ "accuracy": ("Accuracy", "The share of all predictions that were exactly right.", "Secondary, because one outcome is far more common than the others.", [r"accuracy"]),
+ "volatility": ("Volatility", "How much a page’s daily traffic jumps around.", "One of the signals.", [r"volatility"]),
+ "avg-position": ("Average position", "Where a page typically ranks in search results. 1 is the top.", "Used as a signal, with its change from the previous window.", [r"average position"]),
+ "held-out": ("Held-out", "Kept out of training and used only for testing.", "The pages scored in the final test month.", [r"held-out"]),
+}
+
+_SKIP = {"script", "style", "code", "a", "h1", "h2", "th", "button"}
+_PAT = sorted([(p, k) for k, v in GLOSSARY.items() for p in v[3]], key=lambda x: -len(x[0]))
+_RX = re.compile(r"(?<!\w)(?:" + "|".join(f"(?P<g{i}>{p})" for i, (p, _) in enumerate(_PAT)) + r")(?!\w)", re.I)
+
+def add_terms(html_str):
+    """Wrap the first occurrence of each glossary term (per tab) in a hoverable span. Text nodes only."""
+    seen, depth, out = set(), 0, []
+    for tok in re.split(r"(<[^>]+>)", html_str):
+        if tok.startswith("<"):
+            m = re.match(r"<\s*(/?)\s*([a-zA-Z0-9]+)", tok)
+            if m and m.group(2).lower() in _SKIP:
+                depth += -1 if m.group(1) else 1
+            out.append(tok); continue
+        if depth > 0 or not tok.strip():
+            out.append(tok); continue
+        def rep(m):
+            key = _PAT[int(m.lastgroup[1:])][1]
+            if key in seen: return m.group(0)
+            seen.add(key)
+            return f'<span class="term" tabindex="0" data-k="{key}">{m.group(0)}</span>'
+        out.append(_RX.sub(rep, tok))
+    return "".join(out)
+
+def glossary_html():
+    items = sorted(GLOSSARY.values(), key=lambda v: v[0].lower())
+    rows = "".join(f"<dt>{e(t)}</dt><dd>{e(d)} <span class=\"small\">In this paper: {e(h)}</span></dd>" for t, d, h, _ in items)
+    return f'<h2>9 · Glossary</h2><p class="small">Every dotted word in the paper has a pop-up. They are all collected here too.</p><dl class="gloss">{rows}</dl>'
 
 def nice(name):
     return {"hist_gradient_boosting": "histogram gradient boosting", "logistic_regression": "logistic regression"}.get(name, name.replace("_", " "))
@@ -216,15 +324,17 @@ def build(out_path, final, dev, audit, queue, figs, funnel, plan, cfg, repo_url,
     tabs = [("overview", "Overview", overview), ("data", "Data", data), ("method", "Method", method), ("results", "Results", results),
             ("limits", "Limits", limits), ("playbook", "Playbook", playbook), ("repro", "Repro + credit", repro)]
     nav = "".join(f'<a href="#{i}">{e(l)}</a>' for i, l, _ in tabs)
-    panels = "".join(f'<section class="panel{" wide" if i == "overview" else ""}" id="{i}" aria-label="{e(l)}">{h}</section>' for i, l, h in tabs)
+    panels = "".join(f'<section class="panel{" wide" if i == "overview" else ""}" id="{i}" aria-label="{e(l)}">{add_terms(h)}{glossary_html() if i == "repro" else ""}</section>' for i, l, h in tabs)
+    gloss_json = json.dumps({k: {"t": v[0], "d": v[1], "h": v[2]} for k, v in GLOSSARY.items()}, ensure_ascii=False).replace("</", "<\\/")
     page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><meta name="author" content="{e(NAME)}">
 <title>Which pages need attention first? · {e(NAME)}</title><style>{CSS}</style></head><body>
 <div class="top"><span class="who">{e(NAME)}</span><span class="what">Research paper · search-visibility momentum</span></div>
 <nav>{nav}</nav>
+<p class="hint">Words with a <span class="term">dotted underline</span> have a pop-up: hover, tap, or tab to one to see what it means.</p>
 <main>{panels}</main>
 <footer>Built on the FlyRank ML Internship dataset · <a href="https://flyrank.ai" target="_blank" rel="noopener">flyrank.ai</a></footer>
-<script>{JS}</script></body></html>"""
+<script>{JS.replace('__GLOSS__', gloss_json)}</script></body></html>"""
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
     open(out_path, "w", encoding="utf-8").write(page)
     return out_path
