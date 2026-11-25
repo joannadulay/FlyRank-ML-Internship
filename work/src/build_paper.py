@@ -3,43 +3,54 @@ import html, json, os
 e = html.escape
 
 CSS = """
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@125,400;125,600;125,800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:ital,wdth,wght@0,125,400;0,125,600;0,125,800;1,125,400;1,125,700&display=swap');
 @font-face{font-family:"Helios Extended";font-display:swap;
   src:local("Helios Extended"),local("HeliosExtended"),local("Helios-Extended"),
       url("fonts/HeliosExtended.woff2") format("woff2"),url("fonts/HeliosExtended.woff") format("woff");}
-:root{--bg:#fff;--ink:#14101c;--mut:#6b6479;--hair:#e4def2;--tint:#f4f0fc;--p1:#3b1d73;--p2:#6d3fc4;--p3:#b9a2e8;
+:root{--bg:#fff;--ink:#14101c;--mut:#6b6479;--hair:#e4def2;--tint:#f4f0fc;--p1:#3b1d73;--p2:#6d3fc4;--p3:#b9a2e8;--p4:#e1d5f8;
   --f:"Helios Extended","Archivo","Helvetica Neue",Arial,sans-serif}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.7 var(--f);font-stretch:125%;-webkit-font-smoothing:antialiased;
-  border-left:14px solid var(--p2);min-height:100vh}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 14px/1.7 var(--f);font-stretch:125%;-webkit-font-smoothing:antialiased}
 a{color:var(--p2);text-underline-offset:3px}a:hover{color:var(--p1)}
-header{padding:40px 56px 0 48px}
-.name{font-weight:800;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase;margin:0;color:var(--p1)}
-.sub{margin:2px 0 0;font-size:.74rem;color:var(--mut);letter-spacing:.03em}
-nav{display:flex;flex-wrap:wrap;gap:0 28px;margin-top:30px;border-bottom:1px solid var(--hair)}
-nav a{padding:10px 0;margin-bottom:-1px;text-decoration:none;color:var(--mut);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;border-bottom:2px solid transparent}
-nav a:hover{color:var(--ink)}nav a.on{color:var(--ink);font-weight:800;border-bottom-color:var(--p2)}
-main{padding:44px 56px 40px 48px}
-.panel{max-width:800px}
-h1{font-weight:800;font-size:clamp(1.7rem,3.4vw,2.7rem);line-height:1.1;letter-spacing:-.01em;margin:0 0 .5em}
-h2{font-weight:800;font-size:.8rem;letter-spacing:.09em;text-transform:uppercase;color:var(--p1);margin:2.4em 0 .8em}
+.top{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:12px 48px;border-bottom:1.5px solid var(--ink);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase}
+.top .who{font-weight:800}.top .what{color:var(--mut)}
+nav{display:flex;flex-wrap:wrap;gap:10px;padding:26px 48px 0}
+nav a{padding:5px 16px;border:1.5px solid var(--p3);border-radius:999px;text-decoration:none;color:var(--p1);font-size:.72rem;letter-spacing:.05em;background:#fff}
+nav a:hover{background:var(--p4);border-color:var(--p2)}
+nav a.on{background:var(--ink);border-color:var(--ink);color:#fff;font-weight:800}
+main{padding:44px 48px 40px}
+.panel{max-width:860px}.panel.wide{max-width:1100px}
+h1{font-weight:800;font-size:clamp(1.9rem,4vw,3.1rem);line-height:1.08;letter-spacing:-.015em;margin:0 0 .35em}
+h1 .hl{font-style:italic;font-weight:700;background:var(--p4);padding:0 .14em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+h2{font-weight:800;font-size:1.45rem;line-height:1.2;letter-spacing:-.01em;margin:2.2em 0 .6em}
 h2:first-child{margin-top:0}
-p{margin:0 0 1em;max-width:68ch}ul{padding-left:1.1em;max-width:68ch}li{margin-bottom:.5em}
+.tag{display:inline-block;font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--p2);font-weight:800;margin:0 0 .4em}
+p{margin:0 0 1em;max-width:66ch}ul{padding-left:1.1em;max-width:66ch}li{margin-bottom:.5em}
+.subt{font-style:italic;font-size:1.15rem;margin:0 0 1.2em;color:var(--p1)}
 .meta,figcaption,.small{color:var(--mut);font-size:.74rem;letter-spacing:.02em}
-.lead{font-size:1rem;line-height:1.65;max-width:62ch;margin:0 0 1.6em}
-.nums{margin:1.6em 0 2em;max-width:560px;border-top:1px solid var(--ink)}
-.nums div{display:flex;justify-content:space-between;align-items:baseline;gap:20px;padding:10px 0;border-bottom:1px solid var(--hair)}
-.nums dt{font-size:.74rem;letter-spacing:.03em;color:var(--mut)}
-.nums dd{margin:0;font-weight:800;font-size:1.25rem;color:var(--p2);font-variant-numeric:tabular-nums}
+.lead{font-size:.98rem;line-height:1.65;max-width:56ch;margin:0 0 1.4em}
+.hero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.85fr);gap:56px;align-items:start;margin-bottom:2.4em}
+.btn{display:inline-block;background:var(--ink);color:#fff;text-decoration:none;font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;padding:13px 26px;margin:0 10px 8px 0;border:1.5px solid var(--ink)}
+.btn:hover{background:var(--p2);border-color:var(--p2);color:#fff}
+.btn.ghost{background:#fff;color:var(--ink)}.btn.ghost:hover{background:var(--p4);border-color:var(--ink);color:var(--ink)}
+.win{border:1.5px solid var(--ink);background:#fff;margin:1.8em 0;max-width:640px}
+.win .bar{display:flex;align-items:center;gap:6px;padding:7px 12px;background:var(--p4);border-bottom:1.5px solid var(--ink);font-size:.66rem;letter-spacing:.05em}
+.win .bar i{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--ink);background:#fff;display:block}
+.win .bar i:first-child{background:var(--p2)}.win .bar span{margin-left:8px}
+.win .body{padding:14px 16px}.win img{display:block;max-width:100%;height:auto}
+.win figcaption{padding:8px 14px 12px;border-top:1px solid var(--hair);margin:0}
+figure.win{margin-left:0}.panel figure.win:nth-of-type(even){margin-left:56px}
+.nums{margin:0}.nums div{display:flex;justify-content:space-between;align-items:baseline;gap:18px;padding:11px 0;border-bottom:1px solid var(--hair)}
+.nums div:last-child{border-bottom:0}.nums dt{font-size:.72rem;letter-spacing:.02em;color:var(--mut)}
+.nums dd{margin:0;font-weight:800;font-size:1.5rem;color:var(--p2);font-variant-numeric:tabular-nums}
 table{border-collapse:collapse;width:100%;font-size:.78rem;margin:1.2em 0;font-variant-numeric:tabular-nums}
-th{font-size:.64rem;letter-spacing:.07em;text-transform:uppercase;font-weight:600;color:var(--p1);text-align:right;padding:6px 10px;border-bottom:1px solid var(--ink)}
+th{font-size:.64rem;letter-spacing:.07em;text-transform:uppercase;font-weight:600;color:var(--p1);text-align:right;padding:6px 10px;border-bottom:1.5px solid var(--ink)}
 td{padding:7px 10px;border-bottom:1px solid var(--hair);text-align:right}th:first-child,td:first-child{text-align:left;padding-left:0}
-.wrap{overflow-x:auto}figure{margin:1.8em 0;max-width:740px}img{max-width:100%;height:auto;display:block}
-figcaption{margin-top:8px}code{font-size:.9em;background:var(--tint);padding:1px 5px}
-footer{padding:0 56px 48px 48px;color:var(--mut);font-size:.72rem;letter-spacing:.03em}
+.wrap{overflow-x:auto}code{font-size:.9em;background:var(--tint);padding:1px 5px}
+footer{padding:0 48px 48px;color:var(--mut);font-size:.72rem;letter-spacing:.03em}
 .panel[hidden]{display:none}
-@media (max-width:700px){body{border-left-width:8px}header{padding:24px 18px 0 16px}main{padding:28px 18px 24px 16px}footer{padding:0 18px 36px 16px}
- nav{gap:0 18px}.nums dd{font-size:1.05rem}}
+@media (max-width:860px){.hero{grid-template-columns:1fr;gap:28px}.panel figure.win:nth-of-type(even){margin-left:0}}
+@media (max-width:700px){.top{padding:12px 16px;flex-direction:column;align-items:flex-start;gap:2px}nav{padding:18px 16px 0;gap:8px}main{padding:28px 16px 24px}footer{padding:0 16px 36px}}
 """
 
 JS = """
@@ -66,8 +77,13 @@ def table(head, rows):
     b = "".join("<tr>" + "".join(f"<td>{e(str(c))}</td>" for c in r) + "</tr>" for r in rows)
     return f'<div class="wrap"><table><tr>{h}</tr>{b}</table></div>'
 
+FILES = {"compare": "macro-f1.png", "confusion": "confusion.png", "importance": "signals.png", "lift": "queue-lift.png"}
+
 def fig(figs, key, cap):
-    return f'<figure><img alt="{e(cap)}" src="data:image/png;base64,{figs[key]}"><figcaption>{e(cap)}</figcaption></figure>' if key in figs else ""
+    if key not in figs:
+        return ""
+    return (f'<figure class="win"><div class="bar"><i></i><i></i><i></i><span>{e(FILES.get(key, key + ".png"))}</span></div>'
+            f'<div class="body"><img alt="{e(cap)}" src="data:image/png;base64,{figs[key]}"></div><figcaption>{e(cap)}</figcaption></figure>')
 
 def build(out_path, final, dev, audit, queue, figs, funnel, plan, cfg, repo_url, extra=None):
     extra = extra or {}
@@ -134,15 +150,20 @@ def build(out_path, final, dev, audit, queue, figs, funnel, plan, cfg, repo_url,
     if extra.get("top2_client_share") is not None and extra["top2_client_share"] >= 0.30:
         extra_lim += f"<li>A few clients dominate: the two largest hold {pct(extra['top2_client_share'])} of page-windows across {extra['n_clients']} clients, so uncertainty is wide and results may not generalise to other sites.</li>"
     NAME = "Mary Joanna Cathaline S. Dulay"
-    nums = [("Model macro F1 · sealed June test", f3(m["macro_f1"])),
+    nums = [("Model macro F1", f3(m["macro_f1"])),
             ("Best simple baseline · " + final["best_baseline"].replace("_", " "), f3(b["macro_f1"])),
             (f"Difference · 95% interval {lo:+.3f} to {hi:+.3f}", f"{d:+.3f}"),
             ("Held-out pages", f"{final['n_test']:,}")]
     nums_html = '<dl class="nums">' + "".join(f"<div><dt>{e(t)}</dt><dd>{e(v)}</dd></div>" for t, v in nums) + "</dl>"
 
-    overview = f"""<h1>Which pages need attention first?</h1>
+    overview = f"""<div class="hero"><div>
+<h1>Which pages need attention <em class="hl">first?</em></h1>
+<p class="subt">Predicting search-visibility momentum from historical signals</p>
 <p class="meta">{e(NAME)} · Built on the FlyRank ML Internship dataset</p>
-<h2>Abstract</h2><p class="lead">{e(abstract)}</p>{nums_html}
+<span class="tag">Abstract</span><p class="lead">{e(abstract)}</p>
+<p><a class="btn" href="#results">Read the results</a><a class="btn ghost" href="{e(repo_url)}" target="_blank" rel="noopener">See the code</a></p>
+</div>
+<div class="win"><div class="bar"><i></i><i></i><i></i><span>sealed-june-test.png</span></div><div class="body">{nums_html}</div></div></div>
 <h2>1 · Introduction</h2>
 <p>A site can hold thousands of pages and a content team has hours, not weeks. The decision this work supports is <em>which pages to review first</em>. Reviewing a page that would have been fine anyway wastes time; missing a page that was sliding costs visibility. The output is therefore a ranked queue with plain-language reason codes for a person to check, not an automatic action.</p>"""
 
@@ -194,11 +215,12 @@ def build(out_path, final, dev, audit, queue, figs, funnel, plan, cfg, repo_url,
     tabs = [("overview", "Overview", overview), ("data", "Data", data), ("method", "Method", method), ("results", "Results", results),
             ("limits", "Limits", limits), ("playbook", "Playbook", playbook), ("repro", "Repro + credit", repro)]
     nav = "".join(f'<a href="#{i}">{e(l)}</a>' for i, l, _ in tabs)
-    panels = "".join(f'<section class="panel" id="{i}" aria-label="{e(l)}">{h}</section>' for i, l, h in tabs)
+    panels = "".join(f'<section class="panel{" wide" if i == "overview" else ""}" id="{i}" aria-label="{e(l)}">{h}</section>' for i, l, h in tabs)
     page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><meta name="author" content="{e(NAME)}">
 <title>Which pages need attention first? · {e(NAME)}</title><style>{CSS}</style></head><body>
-<header><p class="name">{e(NAME)}</p><p class="sub">Research paper · Predicting search-visibility momentum</p><nav>{nav}</nav></header>
+<div class="top"><span class="who">{e(NAME)}</span><span class="what">Research paper · search-visibility momentum</span></div>
+<nav>{nav}</nav>
 <main>{panels}</main>
 <footer>Built on the FlyRank ML Internship dataset · <a href="https://flyrank.ai" target="_blank" rel="noopener">flyrank.ai</a></footer>
 <script>{JS}</script></body></html>"""
