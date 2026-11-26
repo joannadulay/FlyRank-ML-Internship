@@ -56,6 +56,16 @@ footer{padding:0 var(--pad) 56px;color:var(--mut);font-size:.82rem;letter-spacin
 .tip .here{border-top:1px solid var(--hair);margin-top:9px;padding-top:8px;color:var(--p1)}.tip .here b{font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--p2);display:block}
 .hint{padding:14px var(--pad) 0;margin:0;max-width:none;color:var(--mut);font-size:.8rem}.hint .term{cursor:default}
 .gloss dt{font-weight:800;margin-top:1.1em}.gloss dd{margin:.25em 0 0;max-width:70ch}
+.win .bar em{margin-left:auto;font-style:normal;color:var(--p1);font-size:.72rem}
+.chart{display:block;width:100%;height:auto;overflow:visible}.chart text{fill:var(--ink);font-size:13px}.chart .tick{fill:var(--mut);font-size:11.5px}
+.chart .grid{stroke:var(--hair);stroke-width:1}.chart .bar{fill:var(--p3);transition:fill .15s}.chart .bar.hl{fill:var(--p2)}
+.chart .hot{cursor:help;outline:none}.chart .hit{fill:transparent}.chart .hot:hover .hit,.chart .hot.open .hit{fill:var(--tint)}
+.chart .hot:hover .bar,.chart .hot:focus .bar,.chart .hot.open .bar{fill:var(--p1)}.chart .hot:focus .hit{stroke:var(--p2);stroke-width:1.5}
+.chart .base{stroke:var(--ink);stroke-dasharray:5 4;stroke-width:1.3}
+.chart .cell{stroke:var(--hair);stroke-width:1.5}.chart .hot:hover .cell,.chart .hot:focus .cell,.chart .hot.open .cell{stroke:var(--ink);stroke-width:2.5}
+#gsearch{width:100%;max-width:520px;margin:.4em 0 1.2em;padding:12px 16px;border:1.5px solid var(--ink);border-radius:0;font:inherit;font-stretch:inherit;font-size:.9rem;background:#fff;color:var(--ink)}
+#gsearch:focus{outline:none;border-color:var(--p2);box-shadow:4px 4px 0 var(--p4)}
+h2.sub{font-size:1.15rem;margin-top:2em;color:var(--p1)}.g[hidden]{display:none}
 .panel[hidden]{display:none}
 @media (max-width:900px){.hero{grid-template-columns:1fr;gap:32px}.panel figure.win:nth-of-type(even){margin-left:0}}
 @media (max-width:700px){html{font-size:16px}:root{--pad:16px}.top{flex-direction:column;align-items:flex-start;gap:2px}nav{gap:8px;padding-top:20px}main{padding-top:30px}}
@@ -74,30 +84,38 @@ JS = """
 })();
 
 (function(){
-  var G=__GLOSS__, tip=document.createElement('div'), hideT=null, cur=null;
+  var G=__GLOSS__, tip=document.createElement('div'), hideT=null, cur=null, mx=null, my=null, useMouse=false;
   tip.className='tip'; tip.id='tip'; tip.setAttribute('role','tooltip'); tip.hidden=true; document.body.appendChild(tip);
+  function el(t,c,x){var n=document.createElement(t); if(c) n.className=c; n.textContent=x; return n;}
+  function data(n){
+    if(n.hasAttribute('data-t')) return {t:n.getAttribute('data-t'), d:n.getAttribute('data-d'), h:n.getAttribute('data-h')};
+    return G[n.getAttribute('data-k')];
+  }
   function fill(g){
-    tip.textContent='';
-    function el(t,c,x){var n=document.createElement(t); if(c) n.className=c; n.textContent=x; return n;}
-    tip.appendChild(el('span','tl','What it means')); tip.appendChild(el('strong','',g.t)); tip.appendChild(el('p','',g.d));
-    var h=document.createElement('p'); h.className='here'; h.appendChild(el('b','','In this paper')); h.appendChild(document.createTextNode(g.h)); tip.appendChild(h);
+    tip.textContent=''; tip.appendChild(el('span','tl','What it means')); tip.appendChild(el('strong','',g.t)); tip.appendChild(el('p','',g.d));
+    if(g.h){var h=document.createElement('p'); h.className='here'; h.appendChild(el('b','','In this paper')); h.appendChild(document.createTextNode(g.h)); tip.appendChild(h);}
   }
-  function place(el){
-    var r=el.getBoundingClientRect(), w=tip.offsetWidth, h=tip.offsetHeight;
-    var left=Math.min(Math.max(8,r.left+r.width/2-w/2),window.innerWidth-w-8), top=r.top-h-12;
-    if(top<8) top=r.bottom+12; tip.style.left=left+'px'; tip.style.top=top+'px';
+  function place(n){
+    var r=n.getBoundingClientRect(); if(useMouse&&mx!==null&&n.classList.contains('hot')) r={left:mx,right:mx,top:my,bottom:my,width:0};
+    var w=tip.offsetWidth, h=tip.offsetHeight, left=Math.min(Math.max(8,r.left+r.width/2-w/2),window.innerWidth-w-8), top=r.top-h-14;
+    if(top<8) top=r.bottom+16; tip.style.left=left+'px'; tip.style.top=top+'px';
   }
-  function open(el){var g=G[el.getAttribute('data-k')]; if(!g) return; clearTimeout(hideT); if(cur) cur.classList.remove('open');
-    fill(g); tip.hidden=false; place(el); cur=el; el.classList.add('open'); el.setAttribute('aria-describedby','tip');}
+  function open(n){var g=data(n); if(!g) return; clearTimeout(hideT); if(cur) cur.classList.remove('open');
+    fill(g); tip.hidden=false; place(n); cur=n; n.classList.add('open'); n.setAttribute('aria-describedby','tip');}
   function close(){tip.hidden=true; if(cur){cur.classList.remove('open'); cur.removeAttribute('aria-describedby'); cur=null;}}
   function later(){clearTimeout(hideT); hideT=setTimeout(close,180);}
-  document.addEventListener('mouseover',function(e){var t=e.target.closest&&e.target.closest('.term'); if(t) open(t); else if(e.target.closest&&e.target.closest('#tip')) clearTimeout(hideT);});
-  document.addEventListener('mouseout',function(e){if(e.target.closest&&(e.target.closest('.term')||e.target.closest('#tip'))) later();});
-  document.addEventListener('focusin',function(e){var t=e.target.closest&&e.target.closest('.term'); if(t) open(t);});
-  document.addEventListener('focusout',function(e){if(e.target.closest&&e.target.closest('.term')) later();});
-  document.addEventListener('click',function(e){var t=e.target.closest&&e.target.closest('.term'); if(t){ if(cur===t&&!tip.hidden) close(); else open(t);} else if(!e.target.closest('#tip')) close();});
+  function hit(e){return e.target.closest&&e.target.closest('.term,.hot');}
+  document.addEventListener('mouseover',function(e){useMouse=true; mx=e.clientX; my=e.clientY; var t=hit(e); if(t) open(t); else if(e.target.closest&&e.target.closest('#tip')) clearTimeout(hideT);});
+  document.addEventListener('mousemove',function(e){mx=e.clientX; my=e.clientY; if(cur&&!tip.hidden&&cur.classList.contains('hot')) place(cur);});
+  document.addEventListener('mouseout',function(e){if(hit(e)||(e.target.closest&&e.target.closest('#tip'))) later();});
+  document.addEventListener('focusin',function(e){useMouse=false; var t=hit(e); if(t) open(t);});
+  document.addEventListener('focusout',function(e){if(hit(e)) later();});
+  document.addEventListener('click',function(e){mx=e.clientX; my=e.clientY; var t=hit(e); if(t){ if(cur===t&&!tip.hidden) close(); else open(t);} else if(!e.target.closest('#tip')) close();});
   document.addEventListener('keydown',function(e){if(e.key==='Escape') close();});
   window.addEventListener('scroll',close,true); window.addEventListener('hashchange',close);
+  var gs=document.getElementById('gsearch');
+  if(gs) gs.addEventListener('input',function(){var q=gs.value.toLowerCase().trim();
+    [].forEach.call(document.querySelectorAll('.gloss .g'),function(n){n.hidden=!!q&&n.getAttribute('data-s').indexOf(q)<0;});});
 })();
 """
 
@@ -144,36 +162,164 @@ GLOSSARY = {
  "accuracy": ("Accuracy", "The share of all predictions that were exactly right.", "Secondary, because one outcome is far more common than the others.", [r"accuracy"]),
  "volatility": ("Volatility", "How much a page’s daily traffic jumps around.", "One of the signals.", [r"volatility"]),
  "avg-position": ("Average position", "Where a page typically ranks in search results. 1 is the top.", "Used as a signal, with its change from the previous window.", [r"average position"]),
+
+ "majority": ("Majority rule", "A baseline that always predicts the most common outcome in the training data. It is the floor any real method must beat.", "Scores low on macro F1 because it never predicts the three rarer outcomes.", [r"majority(?: class| rule)?"]),
+ "persistence": ("Persistence rule", "A baseline that assumes last window’s direction continues: pages that rose keep rising and pages that fell keep falling.", "It never predicts Recovery, since Recovery means a reversal.", [r"persistence(?: rule)?"]),
+ "mean-reversion": ("Mean-reversion rule", "A baseline that predicts the opposite of last window’s move: a fall bounces back and a rise fades.", "The mirror image of the persistence rule.", [r"mean[- ]reversion(?: rule)?"]),
+ "growth": ("Growth", "An outcome class: impressions per day over the next 28 days came out at least 25% above the last 28.", "One of the four outcomes the model predicts.", [r"Growth"]),
+ "stable": ("Stable", "An outcome class: impressions per day moved by less than 25% either way.", "The model finds this class the hardest to recognise.", [r"Stable"]),
+ "decline": ("Decline", "An outcome class: impressions per day over the next 28 days came out at least 25% below the last 28.", "The most common outcome in the final test month.", [r"Decline"]),
+ "share-test": ("Share of test pages", "The percentage of final-test pages whose real outcome fell in this class.", "Shows how lopsided the classes are.", [r"share of test pages"]),
  "held-out": ("Held-out", "Kept out of training and used only for testing.", "The pages scored in the final test month.", [r"held-out"]),
 }
 
-_SKIP = {"script", "style", "code", "a", "h1", "h2", "th", "button"}
+
+FEATURE_DOCS = {
+ "log_rate_B": "How much traffic the page has: the log of its impressions per day over the last 28 days.",
+ "d_impr": "Momentum: the change in (log) daily impressions between the last 28 days and the 28 days before.",
+ "r7": "Last-week trend: impressions per day over the last 7 days compared with the 28-day average (log scale). Negative means the page is sliding.",
+ "ctr_B": "Click-through rate over the last 28 days: clicks divided by impressions.",
+ "d_ctr": "Change in click-through rate compared with the previous 28 days.",
+ "pos_B": "Average search position over the last 28 days. 1 is the top of the results.",
+ "d_pos": "Change in average position compared with the previous 28 days. A positive number means the page ranks lower.",
+ "cv_B": "Volatility: how much daily impressions jump around, relative to their average.",
+ "active_share_B": "The share of the last 28 days on which the page had at least one impression.",
+ "avail_share_B": "The share of the last 28 days for which Search Console data was available.",
+ "ga4_cov_B": "The share of the last 28 days for which GA4 data was available.",
+ "eng_per_day_B": "Engaged sessions per day from GA4. Left blank when GA4 was not reporting.",
+ "org_per_day_B": "Organic sessions per day from GA4. Left blank when GA4 was not reporting.",
+}
+for _n, _doc in FEATURE_DOCS.items():
+    GLOSSARY["sig-" + _n] = (_n, _doc, "One of the signals the model sees for each page.", [re.escape(_n)])
+BASE_KEY = {"majority": "majority", "persistence": "persistence", "mean_reversion": "mean-reversion",
+            "recent_slope": "recent-slope", "momentum_tree": "momentum-tree"}
+
+_SKIP = {"script", "style", "code", "a", "h1", "h2", "button", "svg"}
 _PAT = sorted([(p, k) for k, v in GLOSSARY.items() for p in v[3]], key=lambda x: -len(x[0]))
 _RX = re.compile(r"(?<!\w)(?:" + "|".join(f"(?P<g{i}>{p})" for i, (p, _) in enumerate(_PAT)) + r")(?!\w)", re.I)
 
 def add_terms(html_str):
-    """Wrap the first occurrence of each glossary term (per tab) in a hoverable span. Text nodes only."""
-    seen, depth, out = set(), 0, []
+    """Wrap glossary terms in a hoverable span. Running text: first occurrence per tab.
+    Tables: header cells and the first cell of each row, first occurrence per table. SVG and headings are skipped."""
+    seen, tseen = set(), set()
+    depth = tdepth = col = 0
+    is_th = False
+    out = []
     for tok in re.split(r"(<[^>]+>)", html_str):
         if tok.startswith("<"):
             m = re.match(r"<\s*(/?)\s*([a-zA-Z0-9]+)", tok)
-            if m and m.group(2).lower() in _SKIP:
-                depth += -1 if m.group(1) else 1
+            if m:
+                closing, name = m.group(1) == "/", m.group(2).lower()
+                if name in _SKIP: depth += -1 if closing else 1
+                elif name == "table":
+                    tdepth += -1 if closing else 1
+                    if not closing: tseen = set()
+                elif name == "tr" and not closing: col = 0
+                elif name in ("td", "th") and not closing: col += 1; is_th = (name == "th")
             out.append(tok); continue
         if depth > 0 or not tok.strip():
             out.append(tok); continue
-        def rep(m):
+        if tdepth > 0:
+            if not (is_th or col == 1):
+                out.append(tok); continue
+            pool = tseen
+        else:
+            pool = seen
+        def rep(m, pool=pool):
             key = _PAT[int(m.lastgroup[1:])][1]
-            if key in seen: return m.group(0)
-            seen.add(key)
+            if key in pool: return m.group(0)
+            pool.add(key)
             return f'<span class="term" tabindex="0" data-k="{key}">{m.group(0)}</span>'
         out.append(_RX.sub(rep, tok))
     return "".join(out)
 
 def glossary_html():
-    items = sorted(GLOSSARY.values(), key=lambda v: v[0].lower())
-    rows = "".join(f"<dt>{e(t)}</dt><dd>{e(d)} <span class=\"small\">In this paper: {e(h)}</span></dd>" for t, d, h, _ in items)
-    return f'<h2>9 · Glossary</h2><p class="small">Every dotted word in the paper has a pop-up. They are all collected here too.</p><dl class="gloss">{rows}</dl>'
+    terms = sorted([v for k, v in GLOSSARY.items() if not k.startswith("sig-")], key=lambda v: v[0].lower())
+    sigs = [GLOSSARY["sig-" + f] for f in FEATURE_DOCS]
+    def items(lst):
+        return "".join(f'<div class="g" data-s="{e((t + " " + d + " " + h).lower())}"><dt>{e(t)}</dt><dd>{e(d)} <span class="small">In this paper: {e(h)}</span></dd></div>' for t, d, h, _ in lst)
+    return ('<h2>Glossary</h2><p>Every word with a dotted underline in this paper, and every chart bar, has a pop-up. They are all collected here. Type to search.</p>'
+            '<input id="gsearch" type="search" placeholder="Search a term, for example leakage" aria-label="Search the glossary">'
+            f'<h2 class="sub">Terms</h2><dl class="gloss">{items(terms)}</dl>'
+            f'<h2 class="sub">Signals the model sees</h2><dl class="gloss">{items(sigs)}</dl>')
+
+# ---------------- interactive charts (inline SVG, hover cards) ----------------
+_SVG = {}
+
+def _a(s): return html.escape(str(s), quote=True)
+
+def _hot(t, d, h=""):
+    return f'class="hot" tabindex="0" data-t="{_a(t)}" data-d="{_a(d)}" data-h="{_a(h)}"'
+
+def svg_bars(rows, vmax, aria, tickfmt, base=None, base_label="all pages", W=760, LW=210):
+    bh, gap, top = 30, 12, 26
+    H = top + len(rows) * (bh + gap) + 40
+    x0, pw = LW, W - LW - 80
+    X = lambda v: x0 + pw * v / vmax
+    p = [f'<svg class="chart" viewBox="0 0 {W} {H}" role="img" aria-label="{_a(aria)}" xmlns="http://www.w3.org/2000/svg">']
+    for k in range(6):
+        v = vmax * k / 5
+        p.append(f'<line class="grid" x1="{X(v):.1f}" x2="{X(v):.1f}" y1="{top - 6}" y2="{H - 34}"/><text class="tick" x="{X(v):.1f}" y="{H - 14}" text-anchor="middle">{tickfmt(v)}</text>')
+    for n, r in enumerate(rows):
+        y = top + n * (bh + gap)
+        p.append(f'<g {_hot(r["t"], r["d"], r.get("h", ""))}><rect class="hit" x="0" y="{y - 5}" width="{W}" height="{bh + 10}"/>'
+                 f'<text x="{LW - 12}" y="{y + bh / 2 + 4.5}" text-anchor="end">{e(r["label"])}</text>'
+                 f'<rect class="bar{" hl" if r.get("hl") else ""}" x="{x0}" y="{y}" width="{max(X(r["v"]) - x0, 1):.1f}" height="{bh}"/>'
+                 f'<text x="{X(r["v"]) + 8:.1f}" y="{y + bh / 2 + 4.5}">{e(r["txt"])}</text></g>')
+    if base is not None:
+        p.append(f'<line class="base" x1="{X(base):.1f}" x2="{X(base):.1f}" y1="{top - 8}" y2="{H - 34}"/><text class="tick" x="{X(base) + 5:.1f}" y="{top - 10}">{e(base_label)}</text>')
+    p.append("</svg>")
+    return "".join(p)
+
+def svg_heat(conf, classes, aria):
+    cw, ch, LW, TOP = 118, 58, 150, 46
+    W, H = LW + cw * len(classes) + 10, TOP + ch * len(classes) + 34
+    p = [f'<svg class="chart" viewBox="0 0 {W} {H}" role="img" aria-label="{_a(aria)}" xmlns="http://www.w3.org/2000/svg">']
+    for j, c in enumerate(classes):
+        p.append(f'<text x="{LW + cw * j + cw / 2}" y="{TOP - 14}" text-anchor="middle">{e(c)}</text>')
+    p.append(f'<text class="tick" x="{LW + cw * len(classes) / 2}" y="{H - 8}" text-anchor="middle">predicted</text>')
+    for i, c in enumerate(classes):
+        tot = sum(conf[i]) or 1
+        p.append(f'<text x="{LW - 12}" y="{TOP + ch * i + ch / 2 + 4.5}" text-anchor="end">{e(c)}</text>')
+        for j, c2 in enumerate(classes):
+            s = conf[i][j] / tot
+            t = min(1.0, s ** 0.8)
+            col = "#%02x%02x%02x" % (round(255 - (255 - 109) * t), round(255 - (255 - 63) * t), round(255 - (255 - 196) * t))
+            fg = "#fff" if s > 0.5 else "#14101c"
+            d = f"{s:.0%} of pages that were really {c} were predicted {c2} ({conf[i][j]:,} of {tot:,})."
+            p.append(f'<g {_hot(f"Observed {c} → predicted {c2}", d, "A correct call." if i == j else "A miss.")}>'
+                     f'<rect class="cell" x="{LW + cw * j}" y="{TOP + ch * i}" width="{cw}" height="{ch}" fill="{col}"/>'
+                     f'<text x="{LW + cw * j + cw / 2}" y="{TOP + ch * i + ch / 2 + 4.5}" text-anchor="middle" fill="{fg}" style="fill:{fg}">{s:.0%}</text></g>')
+    p.append(f'<text class="tick" x="14" y="{TOP + ch * len(classes) / 2}" transform="rotate(-90 14 {TOP + ch * len(classes) / 2})" text-anchor="middle">observed</text></svg>')
+    return "".join(p)
+
+def build_charts(final, dev, queue):
+    from math import ceil
+    m = final["model_scores"]
+    rows = [dict(label="Model", v=m["macro_f1"], txt=f3(m["macro_f1"]), hl=True, t="Model · " + nice(final["model"]),
+                 d=f"Macro F1 {f3(m['macro_f1'])} · accuracy {f3(m['accuracy'])}.", h="The model under test, fitted on all earlier months.")]
+    for k, v in final["baselines"].items():
+        g = GLOSSARY[BASE_KEY[k]]
+        rows.append(dict(label=k.replace("_", " "), v=v["macro_f1"], txt=f3(v["macro_f1"]), t=g[0],
+                         d=f"Macro F1 {f3(v['macro_f1'])} · accuracy {f3(v['accuracy'])}. " + g[1], h=g[2]))
+    vmax = max(0.05, ceil(max(r["v"] for r in rows) * 1.15 / 0.05) * 0.05)
+    _SVG["compare"] = svg_bars(rows, vmax, "Macro F1 of the model and each baseline on the sealed test month", lambda v: f"{v:.2f}")
+    classes = ["Growth", "Recovery", "Stable", "Decline"]
+    _SVG["confusion"] = svg_heat(m["confusion"], classes, "Share of each real outcome that the model predicted as each class")
+    imp = sorted(dev["importance"].items(), key=lambda kv: -kv[1])[:8]
+    irows = [dict(label=n, v=max(v, 0.0001), txt=f"{v:.3f}", t=n, d=FEATURE_DOCS.get(n, "A signal the model sees."),
+                  h=f"Shuffling it lowers macro F1 by {v:.3f} on validation data. Association, not cause.", hl=(i == 0)) for i, (n, v) in enumerate(imp)]
+    vmax2 = max(0.02, ceil(max(r["v"] for r in irows) * 1.15 / 0.02) * 0.02)
+    _SVG["importance"] = svg_bars(irows, vmax2, "Which signals the model relies on most", lambda v: f"{v:.2f}")
+    q = queue["evidence"]
+    lrows = []
+    for r in q["precision_at_k"]:
+        naive = r["name"].startswith("Naive")
+        lrows.append(dict(label=r["name"].replace("review_decline_risk ", "model queue ").replace(" (top 5%)", ""), v=r["share_declined"], txt=pct(r["share_declined"]),
+                          hl=r["name"].startswith("review_decline_risk"), t=r["name"],
+                          d=f"{pct(r['share_declined'])} of these {r['n']:,} pages actually declined. Lift {r['lift']:.2f}× against all pages ({pct(q['base_decline'])}).",
+                          h="A simple rule used as a yardstick, not the model." if naive else "Pages ranked by the model’s predicted decline risk × traffic."))
+    _SVG["lift"] = svg_bars(lrows, 1.0, "Share of flagged pages that actually declined, against the share of all pages", lambda v: f"{v:.0%}", base=q["base_decline"], LW=300, W=820)
 
 def nice(name):
     return {"hist_gradient_boosting": "histogram gradient boosting", "logistic_regression": "logistic regression"}.get(name, name.replace("_", " "))
@@ -186,9 +332,12 @@ def table(head, rows):
     b = "".join("<tr>" + "".join(f"<td>{e(str(c))}</td>" for c in r) + "</tr>" for r in rows)
     return f'<div class="wrap"><table><tr>{h}</tr>{b}</table></div>'
 
-FILES = {"compare": "macro-f1.png", "confusion": "confusion.png", "importance": "signals.png", "lift": "queue-lift.png"}
+FILES = {"compare": "macro-f1.svg", "confusion": "confusion.svg", "importance": "signals.svg", "lift": "queue-lift.svg"}
 
 def fig(figs, key, cap):
+    if key in _SVG:
+        return (f'<figure class="win"><div class="bar"><i></i><i></i><i></i><span>{e(FILES.get(key, key + ".svg"))}</span><em>hover a bar or cell</em></div>'
+                f'<div class="body">{_SVG[key]}</div><figcaption>{e(cap)}</figcaption></figure>')
     if key not in figs:
         return ""
     return (f'<figure class="win"><div class="bar"><i></i><i></i><i></i><span>{e(FILES.get(key, key + ".png"))}</span></div>'
@@ -196,6 +345,7 @@ def fig(figs, key, cap):
 
 def build(out_path, final, dev, audit, queue, figs, funnel, plan, cfg, repo_url, extra=None):
     extra = extra or {}
+    build_charts(final, dev, queue)
     m, b = final["model_scores"], final["baselines"][final["best_baseline"]]
     lo, hi = final["diff_ci95"]; d = final["diff_vs_best_baseline"]
     if lo > 0: verdict = f"higher than the best simple baseline ({final['best_baseline'].replace('_',' ')}) by {d:.3f} macro F1 (95% interval {lo:.3f} to {hi:.3f})"
@@ -273,24 +423,26 @@ def build(out_path, final, dev, audit, queue, figs, funnel, plan, cfg, repo_url,
 <p><a class="btn" href="#results">Read the results</a><a class="btn ghost" href="{e(repo_url)}" target="_blank" rel="noopener">See the code</a></p>
 </div>
 <div class="win"><div class="bar"><i></i><i></i><i></i><span>sealed-june-test.png</span></div><div class="body">{nums_html}</div></div></div>
-<h2>1 · Introduction</h2>
+<h2>Introduction</h2>
 <p>A site can hold thousands of pages and a content team has hours, not weeks. The decision this work supports is <em>which pages to review first</em>. Reviewing a page that would have been fine anyway wastes time; missing a page that was sliding costs visibility. The output is therefore a ranked queue with plain-language reason codes for a person to check, not an automatic action.</p>"""
 
-    data = f"""<h2>2 · Data</h2>
+    data = f"""<h2>Data</h2>
 <p>Source: the FlyRank ML Internship warehouse, table <code>fact_content_daily_performance</code> (one row per page per day, with Google Search Console and GA4 fields, identifiers pre-hashed). Development used cutoffs up to {e(cfg['dev_end'])}; the month ending {e(cfg['test_end'])} was kept sealed and used once for the final test. A zero is treated as a real zero only on days flagged as GSC-available; unavailable days are excluded rather than filled. Page counts at the final test cutoff ({e(str(plan['test']))}):</p>
 {table(["Step", "Pages"], data_rows)}
 {regime_html}
 <p class="small">No client names, domains, URLs, queries, credentials or raw exports are published.</p>"""
 
-    method = f"""<h2>3 · Methodology</h2>
+    signals_tbl = table(["Signal", "What it measures"], [[f, FEATURE_DOCS.get(f, "")] for f in dev["features"]])
+    method = f"""<h2>Methodology</h2>
 <p><b>Windows.</b> For each cutoff date T: window A = days T−{2*w-1} to T−{w}, window B = T−{w-1} to T (history, used for features), window C = T+1 to T+{w} (outcome, used only for the label).</p>
 <p><b>Label.</b> Using impressions per GSC-available day: Growth if C is at least {thr}% above B; Decline if at least {thr}% below; Recovery is Growth where B was itself at least {thr}% below A; otherwise Stable.</p>
 <p><b>Features</b> ({len(dev['features'])}): impression level and change, last-7-day slope, CTR and its change, average position and change, volatility, share of active days, data availability, and GA4 coverage and engagement (left missing, not zero-filled, when GA4 was not reporting).</p>
+{signals_tbl}
 <p><b>Baselines:</b> always the majority class; “last window’s direction continues”; “last window’s move reverses”; a one-feature “recent slope” rule (a small decision tree using only the last-7-day trend); and a two-feature “momentum tree” (last-7-day trend and change versus the previous window). The last two are the demanding ones: they show how much of the model’s signal is simply recent momentum. The trees’ depth and class weighting were fixed on validation data only.</p>
 <p><b>Validation:</b> time-aware. Training cutoffs are spaced {w} days apart, so no training label window overlaps the next split; the test cutoff comes from the sealed final month. Primary metric: macro F1 (every class counts equally); accuracy is secondary. Uncertainty comes from resampling whole clients.</p>
 <p><b>Leakage checks.</b> (1) Features recomputed after physically deleting all rows after the cutoff were identical (max absolute difference {aud['leakage']['max_abs_diff']:.2g}). (2) No single feature alone reached macro F1 above {aud['leakage']['single_feature_max']:.3f}. (3) Client and page identifiers are never model inputs.</p>"""
 
-    results = f"""<h2>4 · Results</h2>
+    results = f"""<h2>Results</h2>
 {cm}{pc}
 {fig(figs,'compare','Macro F1 on the sealed test cutoff: model vs simple baselines')}
 <p>The model’s macro F1 is {verdict}. {e(dev['reading'])}</p>
@@ -300,7 +452,7 @@ def build(out_path, final, dev, audit, queue, figs, funnel, plan, cfg, repo_url,
 {bt_html}
 {fig(figs,'importance','Which signals the model leans on (permutation importance, validation set; association, not cause)')}"""
 
-    limits = f"""<h2>5 · Limitations and honest framing</h2>
+    limits = f"""<h2>Limitations and honest framing</h2>
 <ul><li>These are <b>observed, directional</b> associations in one panel of sites; they are not causal and do not show how Google ranks or refreshes pages.</li>
 <li>Labels measure change in impressions, which also moves with seasonality, demand and algorithm updates outside the page’s control.</li>
 <li>Window B appears in both the features and the label’s denominator, so part of the signal is regression to the mean.</li>
@@ -308,7 +460,7 @@ def build(out_path, final, dev, audit, queue, figs, funnel, plan, cfg, repo_url,
 {extra_lim}<li>One sealed outcome month: results may differ in other months and other sites.</li>
 <li>Class balance is uneven ({', '.join(f'{k} {pct(v)}' for k, v in final['class_share_test'].items())}), so per-class scores matter more than accuracy.</li></ul>"""
 
-    playbook = f"""<h2>6 · Ranked recommendations (action playbook)</h2>
+    playbook = f"""<h2>Ranked recommendations (action playbook)</h2>
 <p>Queue logic: <b>review_decline_risk</b> = the top {int(q['decline_top_share']*100)}% of pages by (predicted decline probability × observed impressions); <b>watch_recovery</b> and <b>support_growth</b> = highest predicted Recovery / Growth probability. Each row carries reason codes derived from the page’s own recent signals. Checked on the sealed month:</p>
 {table(["Queue slice", "Pages", "Actually declined", "Lift vs all pages"], ev_rows)}
 <p class="small">Base rate of Decline across all test pages: {pct(q['base_decline'])}.</p>
@@ -316,22 +468,21 @@ def build(out_path, final, dev, audit, queue, figs, funnel, plan, cfg, repo_url,
 {fig(figs,'lift','Share of flagged pages that actually declined in the next 28 days (purple = model queue; dashed line = all pages)')}
 <p><b>Human review before acting:</b> check for a known cause (seasonality, migration, tracking change); never auto-rewrite, merge or delete a page from this list. <b>Stale triggers:</b> re-evaluate when macro F1 on the newest labelled cutoff drops below the best baseline, or any key feature’s population stability index exceeds 0.25 (current largest: {e(queue['drift_top_feature'])} at {queue['drift_top_psi']:.2f}).</p>"""
 
-    repro = f"""<h2>7 · Reproducibility</h2>
+    repro = f"""<h2>Reproducibility</h2>
 <p>All code is in <a href="{e(repo_url)}" target="_blank" rel="noopener">the project repository</a>: notebooks <code>w04_signal_audit</code>, <code>w05_model</code>, <code>w06_validation_audit</code>, <code>w07_action_playbook</code> and <code>capstone</code> under <code>work/notebooks/</code>, shared code in <code>work/src/</code>. Fixed seed {cfg['seed']}. Rebuilding the page-level tables can reorder rows, so a re-run may differ from the reported scores in the third decimal place.</p>
-<h2>8 · Acknowledgments and data credit</h2>
+<h2>Acknowledgments and data credit</h2>
 <p>Built on the FlyRank ML Internship dataset — <a href="https://flyrank.ai" target="_blank" rel="noopener">flyrank.ai</a>.</p>"""
 
     tabs = [("overview", "Overview", overview), ("data", "Data", data), ("method", "Method", method), ("results", "Results", results),
-            ("limits", "Limits", limits), ("playbook", "Playbook", playbook), ("repro", "Repro + credit", repro)]
+            ("limits", "Limits", limits), ("playbook", "Playbook", playbook), ("repro", "Repro + credit", repro), ("glossary", "Glossary", glossary_html())]
     nav = "".join(f'<a href="#{i}">{e(l)}</a>' for i, l, _ in tabs)
-    panels = "".join(f'<section class="panel{" wide" if i == "overview" else ""}" id="{i}" aria-label="{e(l)}">{add_terms(h)}{glossary_html() if i == "repro" else ""}</section>' for i, l, h in tabs)
+    panels = "".join(f'<section class="panel{" wide" if i == "overview" else ""}" id="{i}" aria-label="{e(l)}">{add_terms(h) if i != "glossary" else h}</section>' for i, l, h in tabs)
     gloss_json = json.dumps({k: {"t": v[0], "d": v[1], "h": v[2]} for k, v in GLOSSARY.items()}, ensure_ascii=False).replace("</", "<\\/")
     page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1"><meta name="author" content="{e(NAME)}">
 <title>Which pages need attention first? · {e(NAME)}</title><style>{CSS}</style></head><body>
 <div class="top"><span class="who">{e(NAME)}</span><span class="what">Research paper · search-visibility momentum</span></div>
 <nav>{nav}</nav>
-<p class="hint">Words with a <span class="term">dotted underline</span> have a pop-up: hover, tap, or tab to one to see what it means.</p>
 <main>{panels}</main>
 <footer>Built on the FlyRank ML Internship dataset · <a href="https://flyrank.ai" target="_blank" rel="noopener">flyrank.ai</a></footer>
 <script>{JS.replace('__GLOSS__', gloss_json)}</script></body></html>"""
